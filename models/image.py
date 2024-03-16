@@ -4,21 +4,24 @@ from pydantic import BaseModel, Field
 
 
 class ImageBase(BaseModel):
-    subject: str = Field(...)
-    image_url: str = Field(...)
+    subject: str = Field(..., title='subject of image')
+    image_url: str = Field(..., title='url of image')
 
 class ImageCreate(ImageBase):
     pass
 
+class ImageUpdate(ImageBase):
+    pass
+
 class Image(ImageBase):
-    id: int = Field(...)
-    created_by: str = Field(...)
-    created_on: datetime = Field(...)
-    updated_by: str = Field(...)
-    updated_on: datetime = Field(...)
+    id: int = Field(..., title='id of image')
+    created_by: str = Field(..., title='creator of image')
+    created_on: datetime = Field(..., title='creation time of image')
+    updated_by: str = Field(..., title='last editor of image')
+    updated_on: datetime = Field(..., title='last update time of image')
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 "id": "13",
                 "subject": "Senate",
