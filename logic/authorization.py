@@ -9,7 +9,6 @@ from jose import jwt
 # module imports
 from exceptions import TokenError
 from config import get_settings
-from utils import log
 
 config_settings = get_settings()
 
@@ -94,7 +93,6 @@ class AuthorizationLogic:
             raise TokenError({"code": "invalid_claims", "description": "No username found on token"})
         
         tenant = self.get_value_from_token(token=token, key='tenant', namespace=config_settings.AUTH0_TOKEN_NAMESPACE)
-        
         if tenant is None:
             raise TokenError({"code": "invalid_claims", "description": "No tenant found on token"})
         
@@ -102,5 +100,4 @@ class AuthorizationLogic:
             raise TokenError({"code": "invalid_claims", "description": "Invalid tenant found on token"})
         
         valid_scopes = self.validate_scopes(required_scopes=scopes, token=token)
-
         return valid_scopes, username

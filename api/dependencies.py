@@ -10,8 +10,6 @@ from starlette.requests import Request
 # module imports
 from exceptions import AuthError
 from logic.authorization import AuthorizationLogic
-from logic.user import UserLogic
-from data.user import UserData
 from logic.image import ImageLogic
 from data.image import ImageData
 from logic.user_image import UserImageLogic
@@ -29,17 +27,11 @@ def authorize_user(security_scopes: SecurityScopes, token: HTTPAuthorizationCred
         raise AuthError(username=username, scopes=security_scopes.scopes)
     return username
 
-def user_data_dependency(db: Database = Depends(get_db)) -> UserData:
-    return UserData(db=db)
-
 def image_data_dependency(db: Database = Depends(get_db)) -> ImageData:
     return ImageData(db=db)
 
 def user_image_data_dependency(db: Database = Depends(get_db)) -> UserImageData:
     return UserImageData(db=db)
-
-def user_logic_dependency(user_data: UserData = Depends(user_data_dependency)) -> UserLogic:
-    return UserLogic(user_data=user_data)
 
 def image_logic_dependency(image_data: ImageData = Depends(image_data_dependency)) -> ImageLogic:
     return ImageLogic(image_data=image_data)

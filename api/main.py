@@ -7,7 +7,7 @@ from api.events import (create_db_connection_pool, close_db_connection_pool)
 from api.handlers import (not_found_exception_handler, required_value_handler, auth_exception_handler, token_exception_handler)
 from exceptions import (NotFoundError, RequiredValueError, AuthError, TokenError)
 from config import get_settings
-from api.routers import (healthcheck, user, image, user_image)
+from api.routers import (healthcheck, image, user_image)
 
 def get_application():
     config_settings = get_settings()
@@ -44,7 +44,6 @@ def get_application():
 
     # register api endpoints
     app.include_router(healthcheck.router, prefix=f'{base_url}/healthcheck', tags=['healthcheck'])
-    app.include_router(user.router, prefix=f'{base_url}/user', tags=['user'])
     app.include_router(image.router, prefix=f'{base_url}/image', tags=['image'])
     app.include_router(user_image.router, prefix=f'{base_url}/user_image', tags=['user_image'])
     return app
