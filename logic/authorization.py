@@ -1,37 +1,38 @@
 # standard lib imports
-from enum import Enum
 import json
+from enum import Enum
 from typing import Tuple, Sequence
 from urllib.request import urlopen
-
-# third party imports
-from jose import jwt
 # module imports
 from exceptions import TokenError
 from config import get_settings
+# third party imports
+from jose import jwt
+
 
 config_settings = get_settings()
 
 class CRUDOperation(str, Enum):
-    CREATE = 'create'
-    READ = 'read'
-    UPDATE = 'update'
-    DELETE = 'delete'
+    CREATE = "create"
+    READ = "read"
+    UPDATE = "update"
+    DELETE = "delete"
+    GACHA = "gacha"
 
 class ResourceType(str, Enum):
-    USER = 'user'
-    IMAGE = 'image'
-    USER_IMAGE = 'user_image'
+    IMAGE = "image"
+    USER_IMAGE = "user_image"
     
 class AuthorizationLogic:
-    def get_value_from_token(self, token: str, key: str, namespace = None):
+    def get_value_from_token(self, token: str, key: str, namespace: str = None):
         claims = jwt.get_unverified_claims(token=token)
         if namespace:
-            return claims.get(f'{namespace}/{key}')
-        return claims.get(f'{key}')
+            key = f"{namespace}/{key}"
+        claim = claims.get(key)
+        return claim
 
     def validate_token(self, token: str, tenant_url: str) -> bool:
-        jsonurl = urlopen(f'{tenant_url}.well-known/jwks.json')
+        jsonurl = urlopen(f"{tenant_url}.well-known/jwks.json")
         jwks = json.loads(jsonurl.read())
         unverified_header = jwt.get_unverified_header(token)
         rsa_key = {}
@@ -52,7 +53,7 @@ class AuthorizationLogic:
                     rsa_key,
                     algorithms=config_settings.AUTH0_ALGORITHMS,
                     audience=config_settings.AUTH0_API_AUDIENCE,
-                    issuer=f'{tenant_url}'
+                    issuer=f"{tenant_url}"
                 )
                 return True
             except jwt.JWTError as e:
@@ -82,21 +83,21 @@ class AuthorizationLogic:
     
     def authorize_user_for_operation(self, token: str, scopes: Sequence) -> Tuple[bool, str, str]:
         # Retrieve and verify issuer claim on access token
-        issuer = self.get_value_from_token(token=token, key='iss')
+        issuer = self.get_value_from_token(token=token, key="iss")
         if issuer not in config_settings.ALLOWED_ISSUERS:
             raise TokenError({"code": "invalid_claims", "description": "Invalid issuer claim"})
         # Validate token using verified issuer as Auth0 tenant
         self.validate_token(token=token, tenant_url=issuer)
-        username = self.get_value_from_token(token=token, key='email', namespace=config_settings.AUTH0_TOKEN_NAMESPACE)
+        username = self.get_value_from_token(token=token, key="email", namespace=config_settings.AUTH0_TOKEN_NAMESPACE)
 
         if username is None:
             raise TokenError({"code": "invalid_claims", "description": "No username found on token"})
         
-        tenant = self.get_value_from_token(token=token, key='tenant', namespace=config_settings.AUTH0_TOKEN_NAMESPACE)
+        tenant = self.get_value_from_token(token=token, key="tenant", namespace=config_settings.AUTH0_TOKEN_NAMESPACE)
         if tenant is None:
             raise TokenError({"code": "invalid_claims", "description": "No tenant found on token"})
         
-        if tenant != 'mjlee':
+        if tenant != "mjlee":
             raise TokenError({"code": "invalid_claims", "description": "Invalid tenant found on token"})
         
         valid_scopes = self.validate_scopes(required_scopes=scopes, token=token)
