@@ -1,21 +1,22 @@
 
 # module imports
 from exceptions import BaseError
+from models.payment import PaymentBase
 # third party imports
 import stripe
 
 
 class PaymentLogic:
-    def __init__(self, stripe_secret_key: str):
+    def __init__(self, stripe_secret_key: str, product_map: dict[str,str], success_url: str, cancel_url: str):
         stripe.api_key = stripe_secret_key
-        
-    async def process_payment(self, amount: int):
+        self._product_map = product_map
+        self._success_url = success_url
+        self._cancel_url = cancel_url
+
+    async def create(self, products: PaymentBase, user_email: str):
+        line_items = [{"price": self._product_map[product["id"]], "quantity": self._product_map[product["quantity"]]} for product in products]
         try:
-            charge = stripe.PaymentIntent.create(amount=amount, currency="usd", confirm=True, automatic_payment_methods={"enabled": True})
-            return charge.id
-        except stripe.CardError as e:
-            raise BaseError({"code": "payment", "description": e})
-        except stripe.StripeError as e:
-            raise BaseError({"code": "payment", "description": "Something went wrong. Please try again later."})
+            return await stripe.checkout.Session.create(line_items=line_items, customer_email=user_email, mode="payment", 
+                                                        success_url=self._success_url, cancel_url=self._cancel_url)
         except Exception as e:
             raise BaseError({"code": "payment_base", "description": e})

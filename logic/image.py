@@ -4,6 +4,7 @@ from typing import Sequence, Optional
 from datetime import datetime
 from zoneinfo import ZoneInfo
 # module imports
+from exceptions import BaseError
 from data.image import ImageData
 from data.user_image import UserImageData
 from logic.payment import PaymentLogic
@@ -14,11 +15,10 @@ from fastapi import UploadFile
 
 
 class ImageLogic:
-    def __init__(self, image_data: ImageData, user_image_data: UserImageData, payment_logic: PaymentLogic, gacha_price: int):
+    def __init__(self, image_data: ImageData, user_image_data: UserImageData, payment_logic: PaymentLogic):
         self._image_data = image_data
         self._user_image_data = user_image_data
         self._payment_logic = payment_logic
-        self._gacha_price = gacha_price
         
     async def create(self, image_file: UploadFile, user_email: str) -> int:
         pattern = r"^[gj][1-5]_[a-z]+[.][a-z]{3,4}$"
@@ -28,7 +28,7 @@ class ImageLogic:
                                 mime_type=image_file.content_type, rarity=image_file.filename[1], created_by=user_email, updated_by=user_email)
             return await self._image_data.create(image=image, image_file=image_file)
         else:
-            raise Exception({"code": "create:image", "description": "Incorrect file name schema"})        
+            raise BaseError({"code": "create:image", "description": "Incorrect file name schema"})        
     
     async def bulk_create(self, image_files: Sequence[UploadFile], user_email: str) -> int:
         count = 0
@@ -37,8 +37,8 @@ class ImageLogic:
             count += await self.create(image_file=image_file, user_email=user_email)
         return count
     
-    async def read(self, limit: int, offset: int, id: Optional[int], name: Optional[str], user_email: Optional[str]) -> Sequence[Optional[ImageResponse]]:
-        return await self._image_data.read(limit=limit, offset=offset, id=id, name=name, user_email=user_email)
+    async def read(self, id: Optional[int], name: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[ImageResponse]]:
+        return await self._image_data.read(id=id, name=name, user_email=user_email, limit=limit, offset=offset)
 
     async def update(self, id: int, image: ImageBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
