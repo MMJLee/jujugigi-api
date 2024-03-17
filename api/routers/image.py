@@ -30,11 +30,10 @@ async def bulk_create(auth_info: str = Security(authorize_user, scopes=[f"{CRUDO
 
 @router.get("", response_model=Sequence[Optional[ImageResponse]])
 async def read(auth_info: str = Security(authorize_user, scopes=[f"{CRUDOperation.CREATE.value}:{ResourceType.IMAGE.value}"]),
-                   image_logic: ImageLogic = Depends(image_logic_dependency), limit: int = Query(50, ge=50), offset: int = Query(0, ge=0),
-                   id: int = Query(None), name: str = Query(None), user_email: Optional[str] = Query(None)):
+                   image_logic: ImageLogic = Depends(image_logic_dependency), id: Optional[int] = Query(None), name: Optional[str] = Query(None),
+                   user_email: Optional[str] = Query(None), limit: int = Query(50, ge=50), offset: int = Query(0, ge=0)):
     
-    _ = auth_info
-    return await image_logic.read(limit=limit, offset=offset, id=id, name=name, user_email=user_email)
+    return await image_logic.read(id=id, name=name, user_email=user_email, limit=limit, offset=offset)
 
 @router.put("/{id}", response_model=UpdateResponse)
 async def update(auth_info: str = Security(authorize_user, scopes=[f"{CRUDOperation.UPDATE.value}:{ResourceType.IMAGE.value}"]),
@@ -49,7 +48,6 @@ async def update(auth_info: str = Security(authorize_user, scopes=[f"{CRUDOperat
 async def delete(auth_info: str = Security(authorize_user, scopes=[f"{CRUDOperation.DELETE.value}:{ResourceType.IMAGE.value}"]),
                    image_logic: ImageLogic = Depends(image_logic_dependency), id: int = Path(..., title="image id")):
     
-    _ = auth_info
     return await image_logic.delete(id=id)
 
 @router.get("/gacha", response_model=Sequence[Optional[ImageResponse]])

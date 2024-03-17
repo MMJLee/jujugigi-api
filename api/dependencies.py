@@ -31,8 +31,18 @@ def get_supabase_url_timeout(request: Request) -> int:
 def get_stripe_secret_key(request: Request) -> str:
     return request.app.state.config.STRIPE_SECRET_KEY
 
-def get_gacha_price(request: Request) -> int:
-    return request.app.state.config.GACHA_PRICE
+def get_stripe_product_map(request: Request) -> dict[str, str]:
+    return {
+        "Geneva": request.app.state.config.STRIPE_GENEVA_PRICE_ID,
+        "Geneva": request.app.state.config.STRIPE_JUNIPER_PRICE_ID
+    }
+    
+def get_stripe_success_url(request: Request) -> str:
+    return request.app.state.config.STRIPE_SUCCESS_URL
+
+def get_stripe_cancel_url(request: Request) -> str:
+    return request.app.state.config.STRIPE_CANCEL_URL
+
 
 def authorize_user(security_scopes: SecurityScopes, token: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     authorized, username = authorization_logic.authorize_user_for_operation(token=token.credentials, scopes=security_scopes.scopes)
@@ -47,12 +57,13 @@ def image_data_dependency(db: Database = Depends(get_db), supabase_client: Clien
 def user_image_data_dependency(db: Database = Depends(get_db)) -> UserImageData:
     return UserImageData(db=db)
 
-def payment_logic_dependency(stripe_secret_key: str = Depends(get_stripe_secret_key)) -> PaymentLogic:
-    return PaymentLogic(stripe_secret_key=stripe_secret_key)
+def payment_logic_dependency(stripe_secret_key: str = Depends(get_stripe_secret_key), stripe_product_map: dict[str, str] = Depends(get_stripe_product_map),
+                             stripe_success_url: str = Depends(get_stripe_success_url), stripe_cancel_url: str = Depends(get_stripe_cancel_url)) -> PaymentLogic:
+    return PaymentLogic(stripe_secret_key=stripe_secret_key, stripe_product_map=stripe_product_map, stripe_success_url=stripe_success_url, stripe_cancel_url=stripe_cancel_url)
 
-def image_logic_dependency(image_data: ImageData = Depends(image_data_dependency), payment_logic: PaymentLogic = Depends(payment_logic_dependency),
-                           gacha_price: int = Depends(get_gacha_price)) -> ImageLogic:
-    return ImageLogic(image_data=image_data, payment_logic=payment_logic, gacha_price=gacha_price)
+def image_logic_dependency(image_data: ImageData = Depends(image_data_dependency), user_image_data: UserImageData = Depends(user_image_data_dependency),
+                           payment_logic: PaymentLogic = Depends(payment_logic_dependency)) -> ImageLogic:
+    return ImageLogic(image_data=image_data, user_image_data=user_image_data, payment_logic=payment_logic)
 
 def user_image_logic_dependency(user_image_data: UserImageData = Depends(user_image_data_dependency)) -> UserImageLogic:
     return UserImageLogic(user_image_data=user_image_data)

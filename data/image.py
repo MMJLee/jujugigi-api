@@ -45,9 +45,11 @@ class ImageData:
         except Exception as e:
             raise BaseError({"code": "create:image", "description": e})
     
-    async def read(self, limit: int, offset: int, id: Optional[int] = None, name: Optional[str] = None, user_email: Optional[str] = None) -> Sequence[Optional[ImageResponse]]:
+    async def read(self, id: Optional[int] = None, name: Optional[str] = None, user_email: Optional[str] = None, 
+                   limit: int = 50, offset: int = 0) -> Sequence[Optional[ImageResponse]]:
         filter_statement = ""
         values = {"limit": limit, "offset": offset}
+        size = 200
         
         if id: 
             filter_statement = "WHERE i.id = :id"
@@ -58,6 +60,7 @@ class ImageData:
         elif user_email: 
             filter_statement = "JOIN user_image ui ON i.id = ui.image_id WHERE ui.user_email = :user_email"
             values["user_email"] = user_email
+            size = 1000
             
         records = await self._db.fetch_all(
             query=f"""
@@ -69,7 +72,7 @@ class ImageData:
         )
         images = [Image(**dict(record)) for record in records]
         paths = [f"{image.path}/{image.name}" for image in images]
-        return self._supabase_client.storage.from_(self._supabase_bucket).create_signed_urls(paths=paths, expires_in=self._supabase_url_timeout)
+        return self._supabase_client.storage.from_(self._supabase_bucket).create_signed_urls(paths=paths, expires_in=self._supabase_url_timeout, options={"transform": {"width": size, "height": size}})
     
     async def update(self, id: int, image: ImageUpdate) -> int:
         filtered_dict = filter_excluded_keys(image.model_dump())
@@ -100,36 +103,19 @@ class ImageData:
         )
     
     async def unowned_image(self, user_email: str) -> Optional[int]:
-        return await self._db.fetch_val(
-            query=f"""
-                WITH owned_images as (
-                    SELECT image_id FROM user_image
-                    WHERE user_email = :user_email
-                ) SELECT i.id, -LOG(RANDOM())/rarity as priority FROM image i
-                    WHERE i.id NOT IN (SELECT image_id from owned_images)
-                    ORDER BY priority DESC LIMIT 1;
-            """,
-            values={"user_email": user_email}, 
-            column="id"
-        )
-
-    async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
         id = await self._db.fetch_val(
             query=f"""
                 WITH owned_images as (
                     SELECT image_id FROM user_image
                     WHERE user_email = :user_email
-                ), gacha as (
-                    SELECT i.id FROM image i
-                    WHERE i.id NOT IN (SELECT image_id from owned_images)
-                    ORDER BY RANDOM() LIMIT 1
-                ), create_user_image AS (
-                    INSERT INTO user_image (user_email, image_id) 
-                    VALUES (:user_email, (select id from gacha)) RETURNING *
-                ) SELECT image_id FROM create_user_image
+                ) SELECT i.id, -LOG(RANDOM())/rarity as priority FROM image i
+                WHERE i.id NOT IN (SELECT image_id from owned_images)
+                ORDER BY priority DESC LIMIT 1;
             """,
             values={"user_email": user_email}, 
-            column="image_id"
+            column="id"
         )
-        return await self.read(limit=1, offset=0, id=id)
-    
+        if id:
+            return id
+        else:
+            raise BaseError({"code": "gacha", "description": "You already own all images"})
