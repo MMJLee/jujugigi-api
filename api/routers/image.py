@@ -30,12 +30,11 @@ async def bulk_create(auth_info: str = Security(authorize_user, scopes=[f"{CRUDO
 
 @router.get("", response_model=Sequence[Optional[ImageResponse]])
 async def read(auth_info: str = Security(authorize_user, scopes=[f"{CRUDOperation.CREATE.value}:{ResourceType.IMAGE.value}"]),
-                   image_logic: ImageLogic = Depends(image_logic_dependency), id: int = Query(None),
-                   image: str = Query(None), user_email: Optional[str] = Query(None), 
-                   limit: int = Query(50, ge=50), offset: int = Query(0, ge=0)):
+                   image_logic: ImageLogic = Depends(image_logic_dependency), limit: int = Query(50, ge=50), offset: int = Query(0, ge=0),
+                   id: int = Query(None), name: str = Query(None), user_email: Optional[str] = Query(None)):
     
     _ = auth_info
-    return await image_logic.read(id=id, image=image, user_email=user_email, limit=limit, offset=offset)
+    return await image_logic.read(limit=limit, offset=offset, id=id, name=name, user_email=user_email)
 
 @router.put("/{id}", response_model=UpdateResponse)
 async def update(auth_info: str = Security(authorize_user, scopes=[f"{CRUDOperation.UPDATE.value}:{ResourceType.IMAGE.value}"]),

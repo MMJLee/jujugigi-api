@@ -4,6 +4,7 @@ from typing import Sequence, Optional
 from datetime import datetime
 from zoneinfo import ZoneInfo
 # module imports
+from exceptions import BaseError
 from data.image import ImageData
 from logic.payment import PaymentLogic
 from models.image import ImageBase, ImageCreate, ImageResponse, ImageUpdate
@@ -12,9 +13,10 @@ from fastapi import UploadFile
 
 
 class ImageLogic:
-    def __init__(self, image_data: ImageData, payment_logic: PaymentLogic):
+    def __init__(self, image_data: ImageData, payment_logic: PaymentLogic, gacha_price: int):
         self._image_data = image_data
         self._payment_logic = payment_logic
+        self._gacha_price = gacha_price
         
     async def create(self, image_file: UploadFile, user_email: str) -> int:
         pattern = r"^[gj][1-5]_[a-z]+[.][a-z]{3,4}$"
@@ -33,8 +35,8 @@ class ImageLogic:
             count += await self.create(image_file=image_file, user_email=user_email)
         return count
     
-    async def read(self, id: Optional[int], image: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[ImageResponse]]:
-        return await self._image_data.read(id=id, image=image, user_email=user_email, limit=limit, offset=offset)
+    async def read(self, limit: int, offset: int, id: Optional[int], name: Optional[str], user_email: Optional[str]) -> Sequence[Optional[ImageResponse]]:
+        return await self._image_data.read(limit=limit, offset=offset, id=id, name=name, user_email=user_email)
 
     async def update(self, id: int, image: ImageBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
@@ -52,6 +54,6 @@ class ImageLogic:
                 if payment_id:
                     return await self._image_data.gacha(user_email=user_email)
             except Exception as e:
-                raise Exception({"code": "gacha", "description": e})
+                raise BaseError({"code": "gacha", "description": e})
         else:
-            raise Exception({"code": "gacha", "description": "You already own all images"})
+            raise BaseError({"code": "gacha", "description": "You already own all images"})

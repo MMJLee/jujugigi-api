@@ -1,6 +1,7 @@
 # standard lib imports
 from typing import Optional, Sequence
 # module imports
+from exceptions import BaseError
 from models.image import Image, ImageCreate, ImageUpdate, ImageResponse
 from utils import build_insert_statement, build_update_statement, filter_excluded_keys
 # third party imports
@@ -23,7 +24,7 @@ class ImageData:
         except StorageException: #if dupe, continue to adding database record
             pass
         except Exception as e:
-            raise Exception({"code": "image_create", "description": e})
+            raise BaseError({"code": "create:image", "description": e})
         
         mapped_dict = image.model_dump()
         fields_statement, values_statement = build_insert_statement(image.model_dump())
@@ -42,18 +43,18 @@ class ImageData:
         except UniqueViolationError: #if dupe, return created
             return 1
         except Exception as e:
-            raise Exception({"code": "create:image", "description": e})
+            raise BaseError({"code": "create:image", "description": e})
     
-    async def read(self, id: Optional[int], image: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[ImageResponse]]:
+    async def read(self, limit: int, offset: int, id: Optional[int] = None, name: Optional[str] = None, user_email: Optional[str] = None) -> Sequence[Optional[ImageResponse]]:
         filter_statement = ""
         values = {"limit": limit, "offset": offset}
         
         if id: 
             filter_statement = "WHERE i.id = :id"
             values["id"] = id
-        elif image: 
-            filter_statement = "WHERE i.name = :image"
-            values["image"] = image
+        elif name: 
+            filter_statement = "WHERE i.name = :name"
+            values["name"] = name
         elif user_email: 
             filter_statement = "JOIN user_image ui ON i.id = ui.image_id WHERE ui.user_email = :user_email"
             values["user_email"] = user_email
@@ -113,7 +114,7 @@ class ImageData:
         )
 
     async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
-        id = self._db.fetch_val(
+        id = await self._db.fetch_val(
             query=f"""
                 WITH owned_images as (
                     SELECT image_id FROM user_image
@@ -130,5 +131,5 @@ class ImageData:
             values={"user_email": user_email}, 
             column="image_id"
         )
-        return self.read(id)
+        return await self.read(limit=1, offset=0, id=id)
     
