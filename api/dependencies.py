@@ -50,9 +50,9 @@ def user_image_data_dependency(db: Database = Depends(get_db)) -> UserImageData:
 def payment_logic_dependency(stripe_secret_key: str = Depends(get_stripe_secret_key)) -> PaymentLogic:
     return PaymentLogic(stripe_secret_key=stripe_secret_key)
 
-def image_logic_dependency(image_data: ImageData = Depends(image_data_dependency), payment_logic: PaymentLogic = Depends(payment_logic_dependency),
-                           gacha_price: int = Depends(get_gacha_price)) -> ImageLogic:
-    return ImageLogic(image_data=image_data, payment_logic=payment_logic, gacha_price=gacha_price)
+def image_logic_dependency(image_data: ImageData = Depends(image_data_dependency), user_image_data: UserImageData = Depends(user_image_data_dependency),
+                           payment_logic: PaymentLogic = Depends(payment_logic_dependency), gacha_price: int = Depends(get_gacha_price)) -> ImageLogic:
+    return ImageLogic(image_data=image_data, user_image_data=user_image_data, payment_logic=payment_logic, gacha_price=gacha_price)
 
 def user_image_logic_dependency(user_image_data: UserImageData = Depends(user_image_data_dependency)) -> UserImageLogic:
     return UserImageLogic(user_image_data=user_image_data)

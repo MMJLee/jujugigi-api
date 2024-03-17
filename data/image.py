@@ -100,7 +100,7 @@ class ImageData:
         )
     
     async def unowned_image(self, user_email: str) -> Optional[int]:
-        return await self._db.fetch_val(
+        id = await self._db.fetch_val(
             query=f"""
                 WITH owned_images as (
                     SELECT image_id FROM user_image
@@ -112,24 +112,7 @@ class ImageData:
             values={"user_email": user_email}, 
             column="id"
         )
-
-    async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
-        id = await self._db.fetch_val(
-            query=f"""
-                WITH owned_images as (
-                    SELECT image_id FROM user_image
-                    WHERE user_email = :user_email
-                ), gacha as (
-                    SELECT i.id FROM image i
-                    WHERE i.id NOT IN (SELECT image_id from owned_images)
-                    ORDER BY RANDOM() LIMIT 1
-                ), create_user_image AS (
-                    INSERT INTO user_image (user_email, image_id) 
-                    VALUES (:user_email, (select id from gacha)) RETURNING *
-                ) SELECT image_id FROM create_user_image
-            """,
-            values={"user_email": user_email}, 
-            column="image_id"
-        )
-        return await self.read(limit=1, offset=0, id=id)
-    
+        if id:
+            return id
+        else:
+            raise BaseError({"code": "gacha", "description": "You already own all images"})

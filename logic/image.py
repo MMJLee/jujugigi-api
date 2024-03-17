@@ -4,17 +4,19 @@ from typing import Sequence, Optional
 from datetime import datetime
 from zoneinfo import ZoneInfo
 # module imports
-from exceptions import BaseError
 from data.image import ImageData
+from data.user_image import UserImageData
 from logic.payment import PaymentLogic
 from models.image import ImageBase, ImageCreate, ImageResponse, ImageUpdate
+from models.user_image import UserImageCreate
 # third party imports
 from fastapi import UploadFile
 
 
 class ImageLogic:
-    def __init__(self, image_data: ImageData, payment_logic: PaymentLogic, gacha_price: int):
+    def __init__(self, image_data: ImageData, user_image_data: UserImageData, payment_logic: PaymentLogic, gacha_price: int):
         self._image_data = image_data
+        self._user_image_data = user_image_data
         self._payment_logic = payment_logic
         self._gacha_price = gacha_price
         
@@ -48,12 +50,9 @@ class ImageLogic:
         
     async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
         id = await self._image_data.unowned_image(user_email=user_email)
-        if id:
-            try:
-                payment_id = await self._payment_logic.process_payment(99)
-                if payment_id:
-                    return await self._image_data.gacha(user_email=user_email)
-            except Exception as e:
-                raise BaseError({"code": "gacha", "description": e})
-        else:
-            raise BaseError({"code": "gacha", "description": "You already own all images"})
+        payment_id = await self._payment_logic.process_payment(99)
+        if payment_id: # need to confirm payment
+            user_image = UserImageCreate(**user_image.model_dump(), created_by=user_email, updated_by=user_email)
+            res = await self._user_image_data.create(user_image=user_image)
+            if res:
+                return await self._image_data.read(id)
