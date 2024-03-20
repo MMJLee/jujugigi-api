@@ -1,5 +1,6 @@
 # standard lib imports
 from typing import Any, Sequence
+
 # third party imports
 from pydantic import BaseModel, Field
 
@@ -12,7 +13,7 @@ class PaymentBase(BaseModel):
                 {
                     "products": [
                         {"id": "Geneva", "quantity": 2},
-                        {"id": "Juniper", "quantity": 4}
+                        {"id": "Juniper", "quantity": 4},
                     ]
                 }
             ]

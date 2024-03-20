@@ -1,7 +1,7 @@
 # third party imports
 from pydantic import BaseModel, Field
 
-   
+
 class HealthcheckResponse(BaseModel):
     status: str = Field("available", title="healthcheck status")
     model_config = {
@@ -13,6 +13,7 @@ class HealthcheckResponse(BaseModel):
             ]
         }
     }
+
 
 class AddResponse(BaseModel):
     added: int = Field(..., title="added count")
@@ -26,6 +27,7 @@ class AddResponse(BaseModel):
         }
     }
 
+
 class UpdateResponse(BaseModel):
     updated: int = Field(..., title="updated count")
     model_config = {
@@ -37,6 +39,7 @@ class UpdateResponse(BaseModel):
             ]
         }
     }
+
 
 class DeleteResponse(BaseModel):
     deleted: int = Field(..., title="deleted count")
