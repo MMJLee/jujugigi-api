@@ -1,32 +1,33 @@
-# module imports
-from config import get_settings
-from api.events import (create_db_connection_pool, close_db_connection_pool)
-from api.handlers import (not_found_exception_handler, required_value_handler, auth_exception_handler, token_exception_handler)
-from exceptions import (NotFoundError, RequiredValueError, AuthError, TokenError)
-from api.routers import (healthcheck, image, user_image)
 # third party imports
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
+# module imports
+from config import get_settings
+from api.events import create_db_connection_pool, close_db_connection_pool
+from api.handlers import not_found_exception_handler, required_value_handler, auth_exception_handler, token_exception_handler
+from api.routers import healthcheck, image, user_image
+from exceptions import NotFoundError, RequiredValueError, AuthError, TokenError
+
 
 def get_application():
     config_settings = get_settings()
     base_url = f"/jujugigi/v{config_settings.API_MAJOR_VERSION}"
 
-    app = FastAPI(
+    fast_app = FastAPI(
         title=config_settings.API_TITLE,
         version=config_settings.API_VERSION,
         description="API for managing an jujugigi.com",
         docs_url="/jujugigi",
-        openapi_url="/jujugigi/openapi.json"
+        openapi_url="/jujugigi/openapi.json",
     )
 
-    app.state.config = config_settings
+    fast_app.state.config = config_settings
 
-    app.add_middleware(GZipMiddleware, minimum_size=1000)
-    app.add_middleware(
+    fast_app.add_middleware(GZipMiddleware, minimum_size=1000)
+    fast_app.add_middleware(
         CORSMiddleware,
         allow_origin_regex=config_settings.ALLOW_ORIGIN_REGEX,
         allow_credentials=True,
@@ -35,20 +36,21 @@ def get_application():
     )
 
     # register api event handlers
-    app.add_event_handler("startup", create_db_connection_pool(app))
-    app.add_event_handler("shutdown", close_db_connection_pool(app))
+    fast_app.add_event_handler("startup", create_db_connection_pool(fast_app))
+    fast_app.add_event_handler("shutdown", close_db_connection_pool(fast_app))
 
     # register api exception event handlers
-    app.add_exception_handler(NotFoundError, not_found_exception_handler)
-    app.add_exception_handler(RequiredValueError, required_value_handler)
-    app.add_exception_handler(AuthError, auth_exception_handler)
-    app.add_exception_handler(TokenError, token_exception_handler)
+    fast_app.add_exception_handler(NotFoundError, not_found_exception_handler)
+    fast_app.add_exception_handler(RequiredValueError, required_value_handler)
+    fast_app.add_exception_handler(AuthError, auth_exception_handler)
+    fast_app.add_exception_handler(TokenError, token_exception_handler)
 
     # register api endpoints
-    app.include_router(healthcheck.router, prefix=f"{base_url}/healthcheck", tags=["healthcheck"])
-    app.include_router(image.router, prefix=f"{base_url}/image", tags=["image"])
-    app.include_router(user_image.router, prefix=f"{base_url}/user_image", tags=["user_image"])
-    return app
+    fast_app.include_router(healthcheck.router, prefix=f"{base_url}/healthcheck", tags=["healthcheck"])
+    fast_app.include_router(image.router, prefix=f"{base_url}/image", tags=["image"])
+    fast_app.include_router(user_image.router, prefix=f"{base_url}/user_image", tags=["user_image"])
+    return fast_app
+
 
 app = get_application()
 
