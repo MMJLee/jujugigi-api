@@ -26,13 +26,12 @@ class ImageLogic:
         pattern = r"^[GgJj][1-5]_[a-z0-9_]+[.][a-z]{3,4}$"
         if re.match(pattern, image_file.filename, re.IGNORECASE):
             subject_map = {"g": "Geneva", "j": "Juniper"}
-            rarity_map = {"1": "Common", "2": "Uncommon", "3": "Rare", "4": "Epic", "5": "Legendary"}
             image = ImageCreate(
                 subject=subject_map[image_file.filename[0].lower()],
                 path="images",
-                name=image_file.filename,
+                file_name=image_file.filename,
                 description=image_file.filename[3 : image_file.filename.rfind(".")].replace("_", " "),
-                rarity=rarity_map[image_file.filename[1]],
+                rarity_id=image_file.filename[1],
                 created_by=user_email,
                 updated_by=user_email,
             )
@@ -47,8 +46,8 @@ class ImageLogic:
             count += await self.create(image_file=image_file, user_email=user_email)
         return count
 
-    async def read(self, image_id: Optional[int], name: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[ImageResponse]]:
-        return await self._image_data.read(image_id=image_id, name=name, user_email=user_email, limit=limit, offset=offset)
+    async def read(self, image_id: Optional[int], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[ImageResponse]]:
+        return await self._image_data.read(image_id=image_id, user_email=user_email, limit=limit, offset=offset)
 
     async def update(self, image_id: int, image: ImageBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))

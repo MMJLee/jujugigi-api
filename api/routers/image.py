@@ -53,14 +53,13 @@ async def read(
     ),
     image_logic: ImageLogic = Depends(image_logic_dependency),
     image_id: Optional[int] = Query(None),
-    name: Optional[str] = Query(None),
     user_email: Optional[str] = Query(None),
     limit: int = Query(50, ge=50),
     offset: int = Query(0, ge=0),
 ):
 
     _ = auth_info
-    return await image_logic.read(image_id=image_id, name=name, user_email=user_email, limit=limit, offset=offset)
+    return await image_logic.read(image_id=image_id, user_email=user_email, limit=limit, offset=offset)
 
 
 @router.put("/{image_id}", response_model=UpdateResponse)
