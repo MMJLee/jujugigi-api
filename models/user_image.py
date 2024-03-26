@@ -79,7 +79,12 @@ class UserImage(UserImageBase):
 
 class UserRankings(BaseModel):
     user_email: str = Field(..., title="email of user")
-    count: int = Field(..., title="count of images")
+    common_count: int = Field(..., title="count of common images")
+    uncommon_count: int = Field(..., title="count of uncommon images")
+    rare_count: int = Field(..., title="count of rare images")
+    epic_count: int = Field(..., title="count of epic images")
+    unique_count: int = Field(..., title="count of unique images")
+    total_count: int = Field(..., title="count of total images")
     model_config = {
         "json_schema_extra": {
             "examples": [
