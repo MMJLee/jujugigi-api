@@ -1,9 +1,8 @@
- website I made for fun
-
+Website I made for fun
 
 FRONTEND
-Vuejs front end framework
-Vuetify component framework built on vuejs
+vuejs front end framework
+vuetify component framework built on vuejs
 
 BACKEND
 uvicorn[standard] server
@@ -16,8 +15,8 @@ supabase storage
 stripe payment
 
 DEVOPS
-Supabase for database and storage hosting
-Flyio for backend server hosting
-Cloudflare pages for SPA hosting
-Cloudflare for DNS records
-Auth0 for authentication
+supabase for database and storage hosting
+flyio for backend server hosting
+cloudflare pages for SPA hosting
+cloudflare for DNS records
+auth0 for authentication

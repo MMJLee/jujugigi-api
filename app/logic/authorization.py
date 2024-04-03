@@ -85,7 +85,7 @@ class AuthorizationLogic:
     def authorize_user_for_operation(self, token: str, scopes: Sequence) -> Tuple[bool, str, str]:
         # Retrieve and verify issuer claim on access token
         issuer = self.get_value_from_token(token=token, key="iss")
-        if issuer != config_settings.ALLOWED_ISSUERS:
+        if issuer != config_settings.AUTH0_ALLOWED_ISSUERS:
             raise TokenError({"code": "invalid_claims", "description": "Invalid issuer claim"})
         # Validate token using verified issuer as Auth0 tenant
         self.validate_token(token=token, tenant_url=issuer)
