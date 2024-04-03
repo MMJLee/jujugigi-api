@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from api.events import create_db_connection_pool, close_db_connection_pool
 from api.handlers import not_found_exception_handler, required_value_handler, auth_exception_handler, token_exception_handler
-from api.routers import healthcheck, image, user_image
+from api.routers import healthcheck, image, user_image, user_alias
 from exceptions import NotFoundError, RequiredValueError, AuthError, TokenError
 
 
@@ -49,6 +49,7 @@ def get_application():
     fast_app.include_router(healthcheck.router, prefix=f"{base_url}/healthcheck", tags=["healthcheck"])
     fast_app.include_router(image.router, prefix=f"{base_url}/image", tags=["image"])
     fast_app.include_router(user_image.router, prefix=f"{base_url}/user_image", tags=["user_image"])
+    fast_app.include_router(user_alias.router, prefix=f"{base_url}/user_alias", tags=["user_alias"])
     return fast_app
 
 

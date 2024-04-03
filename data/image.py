@@ -51,7 +51,7 @@ class ImageData:
             raise BaseError({"code": "create:image", "description": e}) from e
 
     async def read(
-        self, image_id: Optional[int] = None, user_email: Optional[str] = None, limit: int = 50, offset: int = 0
+        self, image_id: Optional[int] = None, user_email: Optional[str] = None, user_alias: Optional[str] = None, limit: int = 50, offset: int = 0
     ) -> Sequence[Optional[ImageResponse]]:
         filter_statement = ""
         values = {"limit": limit, "offset": offset}
@@ -64,6 +64,12 @@ class ImageData:
             filter_statement = "JOIN user_image ui ON i.image_id = ui.image_id WHERE ui.user_email = :user_email"
             values["user_email"] = user_email
 
+        elif user_alias:
+            filter_statement = (
+                "JOIN user_image ui ON i.image_id = ui.image_id JOIN user_alias ua ON ui.user_email = ua.user_email WHERE ua.user_alias ILIKE :user_alias"
+            )
+            values["user_alias"] = user_alias
+
         records = await self._db.fetch_all(
             query=f"""
                 SELECT i.path, i.file_name, i.description, r.rarity_name
@@ -73,10 +79,10 @@ class ImageData:
             """,
             values=values,
         )
+        image_response = []
         if records:
             paths = [f"{record.path}/{record.file_name}" for record in records]
             image_details = self._supabase_client.storage.from_(self._supabase_bucket).create_signed_urls(paths=paths, expires_in=self._supabase_url_timeout)
-            image_response = []
             for i, record in enumerate(records):
                 image_response.append(ImageResponse(**dict(record), signedURL=image_details[i].get("signedURL")))
         return image_response

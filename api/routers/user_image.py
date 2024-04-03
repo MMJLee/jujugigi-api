@@ -34,7 +34,7 @@ async def create(
 async def read(
     auth_info: str = Security(
         authorize_user,
-        scopes=[f"{CRUDOperation.READ.value}:{ResourceType.USER_IMAGE.value}"],
+        scopes=[],
     ),
     user_image_logic: UserImageLogic = Depends(user_image_logic_dependency),
     limit: int = Query(50, ge=50),
@@ -47,16 +47,11 @@ async def read(
 
 @router.get("/rankings", response_model=Sequence[Optional[UserRankings]])
 async def read_rankings(
-    auth_info: str = Security(
-        authorize_user,
-        scopes=[f"{CRUDOperation.READ.value}:{ResourceType.USER_IMAGE.value}"],
-    ),
     user_image_logic: UserImageLogic = Depends(user_image_logic_dependency),
     limit: int = Query(10, ge=10),
     offset: int = Query(0, ge=0),
 ):
 
-    _ = auth_info
     return await user_image_logic.read_rankings(limit=limit, offset=offset)
 
 

@@ -11,8 +11,10 @@ from logic.authorization import AuthorizationLogic
 from logic.payment import PaymentLogic
 from logic.image import ImageLogic
 from logic.user_image import UserImageLogic
+from logic.user_alias import UserAliasLogic
 from data.image import ImageData
 from data.user_image import UserImageData
+from data.user_alias import UserAliasData
 
 
 authorization_logic = AuthorizationLogic()
@@ -62,7 +64,7 @@ def authorize_user(
 ):
     authorized, username = authorization_logic.authorize_user_for_operation(token=token.credentials, scopes=security_scopes.scopes)
     if not authorized:
-        raise AuthError(username=username, scopes=security_scopes.scopes)
+        raise AuthError({"username": username, "scopes": security_scopes.scopes})
     return username
 
 
@@ -82,6 +84,10 @@ def image_data_dependency(
 
 def user_image_data_dependency(db: Database = Depends(get_db)) -> UserImageData:
     return UserImageData(db=db)
+
+
+def user_alias_data_dependency(db: Database = Depends(get_db)) -> UserAliasData:
+    return UserAliasData(db=db)
 
 
 def payment_logic_dependency(
@@ -114,3 +120,9 @@ def user_image_logic_dependency(
     user_image_data: UserImageData = Depends(user_image_data_dependency),
 ) -> UserImageLogic:
     return UserImageLogic(user_image_data=user_image_data)
+
+
+def user_alias_logic_dependency(
+    user_alias_data: UserAliasData = Depends(user_alias_data_dependency),
+) -> UserAliasLogic:
+    return UserAliasLogic(user_alias_data=user_alias_data)

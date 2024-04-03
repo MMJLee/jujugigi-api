@@ -49,17 +49,18 @@ async def bulk_create(
 async def read(
     auth_info: str = Security(
         authorize_user,
-        scopes=[f"{CRUDOperation.CREATE.value}:{ResourceType.IMAGE.value}"],
+        scopes=[],
     ),
     image_logic: ImageLogic = Depends(image_logic_dependency),
     image_id: Optional[int] = Query(None),
     user_email: Optional[str] = Query(None),
+    user_alias: Optional[str] = Query(None),
     limit: int = Query(50, ge=50),
     offset: int = Query(0, ge=0),
 ):
 
     _ = auth_info
-    return await image_logic.read(image_id=image_id, user_email=user_email, limit=limit, offset=offset)
+    return await image_logic.read(image_id=image_id, user_email=user_email, user_alias=user_alias, limit=limit, offset=offset)
 
 
 @router.put("/{image_id}", response_model=UpdateResponse)
@@ -96,7 +97,7 @@ async def delete(
 async def gacha(
     auth_info: str = Security(
         authorize_user,
-        scopes=[f"{CRUDOperation.READ.value}:{ResourceType.IMAGE.value}"],
+        scopes=[],
     ),
     user_image_logic: ImageLogic = Depends(image_logic_dependency),
 ):

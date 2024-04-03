@@ -46,8 +46,10 @@ class ImageLogic:
             count += await self.create(image_file=image_file, user_email=user_email)
         return count
 
-    async def read(self, image_id: Optional[int], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[ImageResponse]]:
-        return await self._image_data.read(image_id=image_id, user_email=user_email, limit=limit, offset=offset)
+    async def read(
+        self, image_id: Optional[int], user_email: Optional[str], user_alias: Optional[str], limit: int, offset: int
+    ) -> Sequence[Optional[ImageResponse]]:
+        return await self._image_data.read(image_id=image_id, user_email=user_email, user_alias=user_alias, limit=limit, offset=offset)
 
     async def update(self, image_id: int, image: ImageBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
@@ -64,7 +66,7 @@ class ImageLogic:
             res = await self._user_image_data.create(user_image=user_image)
             if res:
                 return await self._image_data.read(image_id)
-        payment_id = await self._payment_logic.process_payment(99)
+        payment_id = await self._payment_logic.create(99)
         if payment_id:  # need to confirm payment
             user_image = UserImageCreate(user_email=user_email, image_id=image_id, created_by=user_email, updated_by=user_email)
             res = await self._user_image_data.create(user_image=user_image)

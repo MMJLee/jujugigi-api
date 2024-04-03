@@ -54,7 +54,6 @@ class ImageUpdate(ImageBase):
         "json_schema_extra": {
             "examples": [
                 {
-                    "id": "1",
                     "subject": "Geneva",
                     "path": "images",
                     "file_name": "G1_couch_potato.jpeg",

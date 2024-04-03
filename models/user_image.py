@@ -1,12 +1,13 @@
 # standard lib imports
 from datetime import datetime
+from typing import Optional
 
 # third party imports
 from pydantic import BaseModel, Field
 
 
 class UserImageBase(BaseModel):
-    user_email: str = Field(..., title="email of user")
+    user_email: Optional[str] = Field(None, title="email of user")
     image_id: int = Field(..., title="id of image")
     model_config = {
         "json_schema_extra": {
@@ -55,7 +56,7 @@ class UserImageUpdate(UserImageBase):
 
 
 class UserImage(UserImageBase):
-    id: int = Field(..., title="id of user_image")
+    user_image_id: int = Field(..., title="id of user_image")
     created_by: str = Field(..., title="creator of user_image")
     created_on: datetime = Field(..., title="creation time of user_image")
     updated_by: str = Field(..., title="last editor of user_image")
@@ -64,7 +65,7 @@ class UserImage(UserImageBase):
         "json_schema_extra": {
             "examples": [
                 {
-                    "id": "1",
+                    "user_image_id": "1",
                     "user_email": "example@email.com",
                     "image_id": "1",
                     "created_by": "dataload",
@@ -78,7 +79,7 @@ class UserImage(UserImageBase):
 
 
 class UserRankings(BaseModel):
-    user_email: str = Field(..., title="email of user")
+    user_alias: str = Field(..., title="alias of user")
     common_count: int = Field(..., title="count of common images")
     uncommon_count: int = Field(..., title="count of uncommon images")
     rare_count: int = Field(..., title="count of rare images")
@@ -89,8 +90,13 @@ class UserRankings(BaseModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "user_email": "example@email.com",
-                    "count": "1",
+                    "user_alias": "alias",
+                    "common_count": "1",
+                    "uncommon_count": "1",
+                    "rare_count": "1",
+                    "epic_count": "1",
+                    "unique_count": "1",
+                    "total_count": "1",
                 }
             ]
         }

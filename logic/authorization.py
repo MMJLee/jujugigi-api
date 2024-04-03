@@ -3,26 +3,32 @@ import json
 from enum import Enum
 from typing import Tuple, Sequence
 from urllib.request import urlopen
-# module imports
-from exceptions import TokenError
-from config import get_settings
+
 # third party imports
 from jose import jwt
 
+# module imports
+from exceptions import TokenError
+from config import get_settings
+
 
 config_settings = get_settings()
+
 
 class CRUDOperation(str, Enum):
     CREATE = "create"
     READ = "read"
     UPDATE = "update"
     DELETE = "delete"
-    GACHA = "gacha"
+
 
 class ResourceType(str, Enum):
     IMAGE = "image"
     USER_IMAGE = "user_image"
-    
+    TRANSACTION = "transaction"
+    USER_ALIAS = "user_alias"
+
+
 class AuthorizationLogic:
     def get_value_from_token(self, token: str, key: str, namespace: str = None):
         claims = jwt.get_unverified_claims(token=token)
@@ -44,7 +50,7 @@ class AuthorizationLogic:
                     "kid": key["kid"],
                     "use": key["use"],
                     "n": key["n"],
-                    "e": key["e"]
+                    "e": key["e"],
                 }
         if rsa_key:
             try:
@@ -53,20 +59,15 @@ class AuthorizationLogic:
                     rsa_key,
                     algorithms=config_settings.AUTH0_ALGORITHMS,
                     audience=config_settings.AUTH0_API_AUDIENCE,
-                    issuer=f"{tenant_url}"
+                    issuer=f"{tenant_url}",
                 )
                 return True
             except jwt.JWTError as e:
                 raise TokenError({"code": "jwt_error", "description": f"{e.args}"}) from e
-            except jwt.ExpiredSignatureError:
-                raise TokenError({"code": "token_expired", "description": "token is expired"})
-            except jwt.JWTClaimsError:
-                raise TokenError({"code": "invalid_claims", "description": "incorrect claims, please check the audience and issuer"})
             except Exception:
-                raise TokenError({"code": "invalid_header", "description": "Unable to parse authentication token."})
+                raise TokenError({"code": "invalid_header", "description": "Unable to parse authentication token."}) from e
         raise TokenError({"code": "invalid_header", "description": "Unable to find appropriate key"})
 
-    
     def validate_scopes(self, required_scopes: Sequence[str], token: str) -> bool:
         unverified_claims = jwt.get_unverified_claims(token)
         if unverified_claims.get("scope"):
@@ -80,7 +81,7 @@ class AuthorizationLogic:
                     return False
             return True
         raise TokenError({"code": "invalid_claims", "description": "Missing scope claim"})
-    
+
     def authorize_user_for_operation(self, token: str, scopes: Sequence) -> Tuple[bool, str, str]:
         # Retrieve and verify issuer claim on access token
         issuer = self.get_value_from_token(token=token, key="iss")
@@ -92,13 +93,13 @@ class AuthorizationLogic:
 
         if username is None:
             raise TokenError({"code": "invalid_claims", "description": "No username found on token"})
-        
+
         tenant = self.get_value_from_token(token=token, key="tenant", namespace=config_settings.AUTH0_TOKEN_NAMESPACE)
         if tenant is None:
             raise TokenError({"code": "invalid_claims", "description": "No tenant found on token"})
-        
-        if tenant != "mjlee":
+
+        if tenant != config_settings.AUTH0_TENANT:
             raise TokenError({"code": "invalid_claims", "description": "Invalid tenant found on token"})
-        
+
         valid_scopes = self.validate_scopes(required_scopes=scopes, token=token)
         return valid_scopes, username

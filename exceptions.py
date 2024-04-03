@@ -26,15 +26,15 @@ class RequiredValueError(BaseError):
         super().__init__(message=message)
 
 class AuthError(BaseError):
-    def __init__(self, username: str, scopes: Sequence[str]) -> None:
-        message = f"Unauthorized Operation"
+    def __init__(self, error: dict) -> None:
+        message = "Unauthorized Operation"
         extras = {
-            "username": username,
-            "scopes": scopes
+            "username": error.get("username"),
+            "scopes": error.get("scopes")
         }
         super().__init__(message=message, extras=extras)
 
 class TokenError(BaseError):
-    def __init__(self, error) -> None:
+    def __init__(self, error: dict) -> None:
         message = f"{error.get("code")}: {error.get("description")}"
         super().__init__(message=message)
