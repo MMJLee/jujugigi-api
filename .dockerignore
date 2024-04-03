@@ -1,7 +1,6 @@
-# flyctl launch added from .gitignore
-**\.gitignore
-**\__pycache__
-**\db
-**\.venv
-**\.env
-**\commands.md
+**/.gitignore
+**/__pycache__
+**/db
+**/.venv
+**/.env
+**/commands.md
