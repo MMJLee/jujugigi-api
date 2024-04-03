@@ -1,5 +1,5 @@
 # standard lib imports
-from typing import Optional, Dict, Any, Sequence
+from typing import Optional, Dict, Any
 
 class BaseError(Exception):
     def __init__(self, message: Optional[str] = None, tags: Optional[Dict[str, Any]] = None, extras: Optional[Dict[str, Any]] = None) -> None:

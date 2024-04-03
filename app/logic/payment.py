@@ -2,8 +2,8 @@
 import stripe
 
 # module imports
-from exceptions import BaseError
-from models.payment import PaymentBase
+from app.exceptions import BaseError
+from app.models.payment import PaymentBase
 
 
 class PaymentLogic:

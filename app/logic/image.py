@@ -8,12 +8,12 @@ from zoneinfo import ZoneInfo
 from fastapi import UploadFile
 
 # module imports
-from exceptions import BaseError
-from data.image import ImageData
-from data.user_image import UserImageData
-from logic.payment import PaymentLogic
-from models.image import ImageBase, ImageCreate, ImageUpdate, ImageResponse
-from models.user_image import UserImageCreate
+from app.exceptions import BaseError
+from app.data.image import ImageData
+from app.data.user_image import UserImageData
+from app.logic.payment import PaymentLogic
+from app.models.image import ImageBase, ImageCreate, ImageUpdate, ImageResponse
+from app.models.user_image import UserImageCreate
 
 
 class ImageLogic:

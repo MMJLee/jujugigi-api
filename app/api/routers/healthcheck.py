@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 
 # module imports
-from models.response import HealthcheckResponse
+from app.models.response import HealthcheckResponse
 
 router = APIRouter()
 

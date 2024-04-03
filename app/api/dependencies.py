@@ -6,15 +6,15 @@ from databases import Database
 from supabase import create_client, Client
 
 # module imports
-from exceptions import AuthError
-from logic.authorization import AuthorizationLogic
-from logic.payment import PaymentLogic
-from logic.image import ImageLogic
-from logic.user_image import UserImageLogic
-from logic.user_alias import UserAliasLogic
-from data.image import ImageData
-from data.user_image import UserImageData
-from data.user_alias import UserAliasData
+from app.exceptions import AuthError
+from app.logic.authorization import AuthorizationLogic
+from app.logic.payment import PaymentLogic
+from app.logic.image import ImageLogic
+from app.logic.user_image import UserImageLogic
+from app.logic.user_alias import UserAliasLogic
+from app.data.image import ImageData
+from app.data.user_image import UserImageData
+from app.data.user_alias import UserAliasData
 
 
 authorization_logic = AuthorizationLogic()
