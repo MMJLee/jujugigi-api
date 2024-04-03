@@ -3,7 +3,7 @@ from fastapi import encoders, responses
 from starlette import status
 
 # module imports
-from exceptions import NotFoundError, RequiredValueError, AuthError, TokenError
+from app.exceptions import NotFoundError, RequiredValueError, AuthError, TokenError
 
 
 def not_found_exception_handler(exc: NotFoundError) -> responses.JSONResponse:

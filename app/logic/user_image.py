@@ -4,8 +4,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # module imports
-from data.user_image import UserImageData
-from models.user_image import UserImage, UserImageBase, UserImageCreate, UserImageUpdate, UserRankings
+from app.data.user_image import UserImageData
+from app.models.user_image import UserImage, UserImageBase, UserImageCreate, UserImageUpdate, UserRankings
 
 
 class UserImageLogic:

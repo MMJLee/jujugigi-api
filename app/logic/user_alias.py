@@ -4,8 +4,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # module imports
-from data.user_alias import UserAliasData
-from models.user_alias import UserAlias, UserAliasBase, UserAliasCreate, UserAliasUpdate
+from app.data.user_alias import UserAliasData
+from app.models.user_alias import UserAlias, UserAliasBase, UserAliasCreate, UserAliasUpdate
 
 
 class UserAliasLogic:

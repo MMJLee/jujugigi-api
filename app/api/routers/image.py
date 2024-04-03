@@ -5,11 +5,11 @@ from typing import Sequence, Optional
 from fastapi import APIRouter, File, Path, Query, Body, Depends, Security, UploadFile
 
 # module imports
-from api.dependencies import image_logic_dependency, authorize_user
-from logic.authorization import CRUDOperation, ResourceType
-from logic.image import ImageLogic
-from models.response import AddResponse, UpdateResponse, DeleteResponse
-from models.image import ImageBase, ImageResponse
+from app.api.dependencies import image_logic_dependency, authorize_user
+from app.logic.authorization import CRUDOperation, ResourceType
+from app.logic.image import ImageLogic
+from app.models.response import AddResponse, UpdateResponse, DeleteResponse
+from app.models.image import ImageBase, ImageResponse
 
 
 router = APIRouter()

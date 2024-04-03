@@ -5,8 +5,8 @@ from typing import Optional, Sequence
 from databases import Database
 
 # module imports
-from models.user_alias import UserAlias, UserAliasCreate, UserAliasUpdate
-from utils import build_insert_statement, build_update_statement
+from app.models.user_alias import UserAlias, UserAliasCreate, UserAliasUpdate
+from app.utils import build_insert_statement, build_update_statement
 
 
 class UserAliasData:

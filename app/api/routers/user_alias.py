@@ -5,11 +5,11 @@ from typing import Sequence, Optional
 from fastapi import APIRouter, Path, Query, Body, Depends, Security
 
 # module imports
-from api.dependencies import user_alias_logic_dependency, authorize_user
-from logic.authorization import CRUDOperation, ResourceType
-from logic.user_alias import UserAliasLogic
-from models.response import AddResponse, UpdateResponse, DeleteResponse
-from models.user_alias import UserAlias, UserAliasBase
+from app.api.dependencies import user_alias_logic_dependency, authorize_user
+from app.logic.authorization import CRUDOperation, ResourceType
+from app.logic.user_alias import UserAliasLogic
+from app.models.response import AddResponse, UpdateResponse, DeleteResponse
+from app.models.user_alias import UserAlias, UserAliasBase
 
 
 router = APIRouter()

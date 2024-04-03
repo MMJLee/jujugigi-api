@@ -8,9 +8,9 @@ from supabase import Client, StorageException
 from asyncpg.exceptions import UniqueViolationError
 
 # module imports
-from exceptions import BaseError
-from models.image import ImageCreate, ImageResponse, ImageUpdate
-from utils import build_insert_statement, build_update_statement
+from app.exceptions import BaseError
+from app.models.image import ImageCreate, ImageResponse, ImageUpdate
+from app.utils import build_insert_statement, build_update_statement
 
 
 class ImageData:

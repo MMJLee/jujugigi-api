@@ -5,11 +5,11 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
 # module imports
-from config import get_settings
-from api.events import create_db_connection_pool, close_db_connection_pool
-from api.handlers import not_found_exception_handler, required_value_handler, auth_exception_handler, token_exception_handler
-from api.routers import healthcheck, image, user_image, user_alias
-from exceptions import NotFoundError, RequiredValueError, AuthError, TokenError
+from app.config import get_settings
+from app.api.events import create_db_connection_pool, close_db_connection_pool
+from app.api.handlers import not_found_exception_handler, required_value_handler, auth_exception_handler, token_exception_handler
+from app.api.routers import healthcheck, image, user_image, user_alias
+from app.exceptions import NotFoundError, RequiredValueError, AuthError, TokenError
 
 
 def get_application():
