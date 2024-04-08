@@ -1,26 +1,23 @@
 # third party imports
-from fastapi import APIRouter, Body, Depends, Security
+from fastapi import APIRouter, Depends, Security
+from fastapi.responses import RedirectResponse
 
 # module imports
-from app.api.dependencies import payment_logic_dependency, authorize_user
-from app.logic.authorization import CRUDOperation, ResourceType
-from app.logic.payment import PaymentLogic
-from app.models.payment import PaymentBase
-
+from app.api.dependencies import stripe_logic_dependency, authorize_user
+from app.logic.stripe import StripeLogic
 
 router = APIRouter()
 
 
-@router.post("", response_model=str)
+@router.post("", response_model=RedirectResponse)
 async def create(
     auth_info: str = Security(
         authorize_user,
-        scopes=[f"{CRUDOperation.CREATE.value}:{ResourceType.TRANSACTION.value}"],
+        scopes=[],
     ),
-    payment_logic: PaymentLogic = Depends(payment_logic_dependency),
-    products: PaymentBase = Body(..., title="payment"),
+    stripe_logic: StripeLogic = Depends(stripe_logic_dependency),
 ):
 
     user_email = auth_info
-    session = payment_logic.create(products=products, user_email=user_email)
-    return session.url
+    session = await stripe_logic.create(user_email=user_email)
+    return RedirectResponse(url=session.url)

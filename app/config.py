@@ -48,9 +48,8 @@ class Settings(BaseSettings):
     SUPABASE_URL_TIMEOUT: int = os.environ.get("SUPABASE_URL_TIMEOUT")
 
     # Stripe - DEV
+    CLIENT_DOMAIN: str = os.environ.get("DEV_DOMAIN")
     STRIPE_SECRET_KEY: str = os.environ.get("DEV_STRIPE_SECRET_KEY")
-    STRIPE_SUCCESS_URL: str = os.environ.get("DEV_STRIPE_SUCCESS_URL")
-    STRIPE_CANCEL_URL: str = os.environ.get("DEV_STRIPE_CANCEL_URL")
     STRIPE_GENEVA_PRICE_ID: str = os.environ.get("DEV_STRIPE_GENEVA_PRICE_ID")
     STRIPE_JUNIPER_PRICE_ID: str = os.environ.get("DEV_STRIPE_JUNIPER_PRICE_ID")
 
@@ -68,14 +67,13 @@ env = (os.environ.get("API_ENV") or "local").lower()
 if env == "prod":
 
     class ProductionConfig(Settings):
+        CLIENT_DOMAIN: str = os.environ.get("PROD_DOMAIN")
         ALLOW_ORIGIN_REGEX: str = r"^(https?:\/\/(?:.+\.)?jujugigi\.com(?::\d{1,5})?)$"
         DATABASE_URL: str = os.environ.get("PROD_DATABASE_URL")
         MAX_DB_POOL_SIZE: int = 10
 
         # Stripe - PROD
         STRIPE_SECRET_KEY: str = os.environ.get("PROD_STRIPE_SECRET_KEY")
-        STRIPE_SUCCESS_URL: str = os.environ.get("PROD_STRIPE_SUCCESS_URL")
-        STRIPE_CANCEL_URL: str = os.environ.get("PROD_STRIPE_CANCEL_URL")
         STRIPE_GENEVA_PRICE_ID: str = os.environ.get("PROD_STRIPE_GENEVA_PRICE_ID")
         STRIPE_JUNIPER_PRICE_ID: str = os.environ.get("PROD_STRIPE_JUNIPER_PRICE_ID")
 

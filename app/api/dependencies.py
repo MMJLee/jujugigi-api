@@ -8,7 +8,7 @@ from supabase import create_client, Client
 # module imports
 from app.exceptions import AuthError
 from app.logic.authorization import AuthorizationLogic
-from app.logic.payment import PaymentLogic
+from app.logic.stripe import StripeLogic
 from app.logic.image import ImageLogic
 from app.logic.user_image import UserImageLogic
 from app.logic.user_alias import UserAliasLogic
@@ -50,12 +50,8 @@ def get_stripe_product_map(request: Request) -> dict[str, str]:
     }
 
 
-def get_stripe_success_url(request: Request) -> str:
-    return request.app.state.config.STRIPE_SUCCESS_URL
-
-
-def get_stripe_cancel_url(request: Request) -> str:
-    return request.app.state.config.STRIPE_CANCEL_URL
+def get_domain(request: Request) -> str:
+    return request.app.state.config.CLIENT_DOMAIN
 
 
 def authorize_user(
@@ -90,29 +86,23 @@ def user_alias_data_dependency(db: Database = Depends(get_db)) -> UserAliasData:
     return UserAliasData(db=db)
 
 
-def payment_logic_dependency(
+def stripe_logic_dependency(
     stripe_secret_key: str = Depends(get_stripe_secret_key),
     stripe_product_map: dict[str, str] = Depends(get_stripe_product_map),
-    stripe_success_url: str = Depends(get_stripe_success_url),
-    stripe_cancel_url: str = Depends(get_stripe_cancel_url),
-) -> PaymentLogic:
-    return PaymentLogic(
-        stripe_secret_key=stripe_secret_key,
-        stripe_product_map=stripe_product_map,
-        stripe_success_url=stripe_success_url,
-        stripe_cancel_url=stripe_cancel_url,
-    )
+    domain_url: str = Depends(get_domain),
+) -> StripeLogic:
+    return StripeLogic(stripe_secret_key=stripe_secret_key, stripe_product_map=stripe_product_map, domain_url=domain_url)
 
 
 def image_logic_dependency(
     image_data: ImageData = Depends(image_data_dependency),
     user_image_data: UserImageData = Depends(user_image_data_dependency),
-    payment_logic: PaymentLogic = Depends(payment_logic_dependency),
+    stripe_logic: StripeLogic = Depends(stripe_logic_dependency),
 ) -> ImageLogic:
     return ImageLogic(
         image_data=image_data,
         user_image_data=user_image_data,
-        payment_logic=payment_logic,
+        stripe_logic=stripe_logic,
     )
 
 

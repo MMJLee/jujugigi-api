@@ -11,16 +11,16 @@ from fastapi import UploadFile
 from app.exceptions import BaseError
 from app.data.image import ImageData
 from app.data.user_image import UserImageData
-from app.logic.payment import PaymentLogic
+from app.logic.stripe import StripeLogic
 from app.models.image import ImageBase, ImageCreate, ImageUpdate, ImageResponse
 from app.models.user_image import UserImageCreate
 
 
 class ImageLogic:
-    def __init__(self, image_data: ImageData, user_image_data: UserImageData, payment_logic: PaymentLogic):
+    def __init__(self, image_data: ImageData, user_image_data: UserImageData, stripe_logic: StripeLogic):
         self._image_data = image_data
         self._user_image_data = user_image_data
-        self._payment_logic = payment_logic
+        self._stripe_logic = stripe_logic
 
     async def create(self, image_file: UploadFile, user_email: str) -> int:
         pattern = r"^[GgJj][1-5]_[a-z0-9_]+[.][a-z]{3,4}$"
@@ -66,8 +66,8 @@ class ImageLogic:
             res = await self._user_image_data.create(user_image=user_image)
             if res:
                 return await self._image_data.read(image_id)
-        payment_id = await self._payment_logic.create(99)
-        if payment_id:  # need to confirm payment
+        stripe_id = await self._stripe_logic.create(99)
+        if stripe_id:
             user_image = UserImageCreate(user_email=user_email, image_id=image_id, created_by=user_email, updated_by=user_email)
             res = await self._user_image_data.create(user_image=user_image)
             if res:

@@ -5,7 +5,7 @@ from typing import Any, Sequence
 from pydantic import BaseModel, Field
 
 
-class PaymentBase(BaseModel):
+class StripeBase(BaseModel):
     products: Sequence[dict[str, Any]] = Field(..., title="price_id:quantity array of order")
     model_config = {
         "json_schema_extra": {
