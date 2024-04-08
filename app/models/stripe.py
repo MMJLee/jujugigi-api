@@ -2,7 +2,7 @@
 from typing import Any, Sequence
 
 # third party imports
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class StripeBase(BaseModel):
@@ -19,3 +19,7 @@ class StripeBase(BaseModel):
             ]
         }
     }
+
+
+class StripeResponse(BaseModel):
+    url: HttpUrl = Field(..., title="redirect url for stripe checkout")
