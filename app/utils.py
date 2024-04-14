@@ -1,9 +1,5 @@
 # standard lib imports
-import logging
 from typing import Dict, Any, Tuple, Set, List
-
-
-logger = logging.getLogger("uvicorn.access")
 
 
 def filter_excluded_keys(mapped_dict: Dict[str, Any], excluded_keys: Set[str]) -> Dict[str, Any]:

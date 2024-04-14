@@ -75,8 +75,8 @@ async def update(
 ):
 
     user_email = auth_info
-    added = await image_logic.update(image_id=image_id, image=image, user_email=user_email)
-    return AddResponse(added=added)
+    updated = await image_logic.update(image_id=image_id, image=image, user_email=user_email)
+    return UpdateResponse(updated=updated)
 
 
 @router.delete("/{image_id}", response_model=DeleteResponse)
@@ -90,17 +90,5 @@ async def delete(
 ):
 
     _ = auth_info
-    return await image_logic.delete(image_id=image_id)
-
-
-@router.get("/gacha", response_model=Sequence[Optional[ImageResponse]])
-async def gacha(
-    auth_info: str = Security(
-        authorize_user,
-        scopes=[],
-    ),
-    user_image_logic: ImageLogic = Depends(image_logic_dependency),
-):
-
-    user_email = auth_info
-    return await user_image_logic.gacha(user_email=user_email)
+    deleted = await image_logic.delete(image_id=image_id)
+    return DeleteResponse(deleted=deleted)

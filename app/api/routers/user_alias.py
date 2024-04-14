@@ -59,8 +59,8 @@ async def update(
 ):
 
     user_email = auth_info
-    added = await user_alias_logic.update(user_alias_id=user_alias_id, user_alias=user_alias, user_email=user_email)
-    return AddResponse(added=added)
+    updated = await user_alias_logic.update(user_alias_id=user_alias_id, user_alias=user_alias, user_email=user_email)
+    return UpdateResponse(updated=updated)
 
 
 @router.delete("/{user_alias_id}", response_model=DeleteResponse)
@@ -74,4 +74,5 @@ async def delete(
 ):
 
     _ = auth_info
-    return await user_alias_logic.delete(user_alias_id=user_alias_id)
+    deleted = await user_alias_logic.delete(user_alias_id=user_alias_id)
+    return DeleteResponse(deleted=deleted)
