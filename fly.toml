@@ -11,12 +11,14 @@ primary_region = 'atl'
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = false
-  auto_start_machines = false
+  auto_stop_machines = true
+  auto_start_machines = true
   min_machines_running = 1
+  max_machines_running = 3
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
+  size = "shared-cpu-1x"
   cpus = 1
+  cpu_kind = 'shared'
+  memory = '256'
