@@ -67,8 +67,8 @@ async def update(
 ):
 
     user_email = auth_info
-    added = await user_image_logic.update(user_image_id=user_image_id, user_image=user_image, user_email=user_email)
-    return AddResponse(added=added)
+    updated = await user_image_logic.update(user_image_id=user_image_id, user_image=user_image, user_email=user_email)
+    return UpdateResponse(updated=updated)
 
 
 @router.delete("/{user_image_id}", response_model=DeleteResponse)
@@ -82,4 +82,5 @@ async def delete(
 ):
 
     _ = auth_info
-    return await user_image_logic.delete(user_image_id=user_image_id)
+    deleted = await user_image_logic.delete(user_image_id=user_image_id)
+    return DeleteResponse(deleted=deleted)

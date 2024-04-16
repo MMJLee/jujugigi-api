@@ -53,15 +53,15 @@ class UserAliasData:
                 user_alias_response.append(UserAlias(**dict(record)))
         return user_alias_response
 
-    async def update(self, user_alias_id: int, user_alias: UserAliasUpdate) -> int:
+    async def update(self, user_email: str, user_alias: UserAliasUpdate) -> int:
         mapped_dict = user_alias.model_dump()
-        mapped_dict["user_alias_id"] = user_alias_id
+        mapped_dict["user_email"] = user_email
         update_statement = build_update_statement(mapped_dict=mapped_dict)
         return await self._db.fetch_val(
             query=f"""
                 WITH update_user_alias as (
                     UPDATE user_alias SET {update_statement}
-                    WHERE user_alias_id = :user_alias_id RETURNING *
+                    WHERE user_email = :user_email RETURNING *
                 ) SELECT COUNT(*) as updated 
                 FROM update_user_alias
             """,

@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str = os.environ.get("DEV_STRIPE_SECRET_KEY")
     STRIPE_GENEVA_PRICE_ID: str = os.environ.get("DEV_STRIPE_GENEVA_PRICE_ID")
     STRIPE_JUNIPER_PRICE_ID: str = os.environ.get("DEV_STRIPE_JUNIPER_PRICE_ID")
+    STRIPE_WEBHOOK_SECRET: str = os.environ.get("DEV_STRIPE_WEBHOOK_SECRET")
 
 
 class LocalConfig(Settings):
@@ -76,6 +77,7 @@ if env == "prod":
         STRIPE_SECRET_KEY: str = os.environ.get("PROD_STRIPE_SECRET_KEY")
         STRIPE_GENEVA_PRICE_ID: str = os.environ.get("PROD_STRIPE_GENEVA_PRICE_ID")
         STRIPE_JUNIPER_PRICE_ID: str = os.environ.get("PROD_STRIPE_JUNIPER_PRICE_ID")
+        STRIPE_WEBHOOK_SECRET: str = os.environ.get("PROD_STRIPE_WEBHOOK_SECRET")
 
 
 def get_settings():

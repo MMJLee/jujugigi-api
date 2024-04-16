@@ -19,10 +19,10 @@ class UserAliasLogic:
     async def read(self, user_alias: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[UserAlias]]:
         return await self._user_alias_data.read(user_alias=user_alias, user_email=user_email, limit=limit, offset=offset)
 
-    async def update(self, user_alias_id: int, user_alias: UserAliasBase, user_email: str) -> int:
+    async def update(self, user_alias: UserAliasBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
         user_alias = UserAliasUpdate(**user_alias.model_dump(), updated_by=user_email, updated_on=now)
-        return await self._user_alias_data.update(user_alias_id=user_alias_id, user_alias=user_alias)
+        return await self._user_alias_data.update(user_email=user_email, user_alias=user_alias)
 
     async def delete(self, user_alias_id: int) -> int:
         return await self._user_alias_data.delete(user_alias_id=user_alias_id)

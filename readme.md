@@ -20,3 +20,5 @@ flyio for backend server hosting
 cloudflare pages for SPA hosting
 cloudflare for DNS records
 auth0 for authentication
+
+cat .env | fly secrets import 

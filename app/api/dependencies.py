@@ -6,6 +6,7 @@ from databases import Database
 from supabase import create_client, Client
 
 # module imports
+from app.data.stripe import StripeData
 from app.exceptions import AuthError
 from app.logic.authorization import AuthorizationLogic
 from app.logic.stripe import StripeLogic
@@ -50,6 +51,10 @@ def get_stripe_product_map(request: Request) -> dict[str, str]:
     }
 
 
+def get_stripe_webhook_secret(request: Request) -> str:
+    return request.app.state.config.STRIPE_WEBHOOK_SECRET
+
+
 def get_domain(request: Request) -> str:
     return request.app.state.config.CLIENT_DOMAIN
 
@@ -86,24 +91,15 @@ def user_alias_data_dependency(db: Database = Depends(get_db)) -> UserAliasData:
     return UserAliasData(db=db)
 
 
-def stripe_logic_dependency(
-    stripe_secret_key: str = Depends(get_stripe_secret_key),
-    stripe_product_map: dict[str, str] = Depends(get_stripe_product_map),
-    domain_url: str = Depends(get_domain),
-) -> StripeLogic:
-    return StripeLogic(stripe_secret_key=stripe_secret_key, stripe_product_map=stripe_product_map, domain_url=domain_url)
+def stripe_data_dependency(db: Database = Depends(get_db)) -> StripeData:
+    return StripeData(db=db)
 
 
 def image_logic_dependency(
     image_data: ImageData = Depends(image_data_dependency),
     user_image_data: UserImageData = Depends(user_image_data_dependency),
-    stripe_logic: StripeLogic = Depends(stripe_logic_dependency),
 ) -> ImageLogic:
-    return ImageLogic(
-        image_data=image_data,
-        user_image_data=user_image_data,
-        stripe_logic=stripe_logic,
-    )
+    return ImageLogic(image_data=image_data, user_image_data=user_image_data)
 
 
 def user_image_logic_dependency(
@@ -116,3 +112,21 @@ def user_alias_logic_dependency(
     user_alias_data: UserAliasData = Depends(user_alias_data_dependency),
 ) -> UserAliasLogic:
     return UserAliasLogic(user_alias_data=user_alias_data)
+
+
+def stripe_logic_dependency(
+    stripe_data: StripeData = Depends(stripe_data_dependency),
+    stripe_secret_key: str = Depends(get_stripe_secret_key),
+    stripe_product_map: dict[str, str] = Depends(get_stripe_product_map),
+    stripe_webhook_secret: str = Depends(get_stripe_webhook_secret),
+    domain_url: str = Depends(get_domain),
+    image_logic: ImageLogic = Depends(image_logic_dependency),
+) -> StripeLogic:
+    return StripeLogic(
+        stripe_data=stripe_data,
+        stripe_secret_key=stripe_secret_key,
+        stripe_product_map=stripe_product_map,
+        stripe_webhook_secret=stripe_webhook_secret,
+        domain_url=domain_url,
+        image_logic=image_logic,
+    )

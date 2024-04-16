@@ -47,20 +47,19 @@ async def read(
     return await user_alias_logic.read(user_alias=user_alias, user_email=user_email, limit=limit, offset=offset)
 
 
-@router.put("/{user_alias_id}", response_model=UpdateResponse)
+@router.put("", response_model=UpdateResponse)
 async def update(
     auth_info: str = Security(
         authorize_user,
-        scopes=[f"{CRUDOperation.UPDATE.value}:{ResourceType.USER_ALIAS.value}"],
+        scopes=[],
     ),
     user_alias_logic: UserAliasLogic = Depends(user_alias_logic_dependency),
-    user_alias_id: int = Path(..., title="user_alias id"),
     user_alias: UserAliasBase = Body(..., title="update user_alias"),
 ):
 
     user_email = auth_info
-    added = await user_alias_logic.update(user_alias_id=user_alias_id, user_alias=user_alias, user_email=user_email)
-    return AddResponse(added=added)
+    updated = await user_alias_logic.update(user_alias=user_alias, user_email=user_email)
+    return UpdateResponse(updated=updated)
 
 
 @router.delete("/{user_alias_id}", response_model=DeleteResponse)
@@ -74,4 +73,5 @@ async def delete(
 ):
 
     _ = auth_info
-    return await user_alias_logic.delete(user_alias_id=user_alias_id)
+    deleted = await user_alias_logic.delete(user_alias_id=user_alias_id)
+    return DeleteResponse(deleted=deleted)

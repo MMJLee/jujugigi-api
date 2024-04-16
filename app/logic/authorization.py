@@ -27,6 +27,7 @@ class ResourceType(str, Enum):
     USER_IMAGE = "user_image"
     TRANSACTION = "transaction"
     USER_ALIAS = "user_alias"
+    STRIPE = "stripe"
 
 
 class AuthorizationLogic:
