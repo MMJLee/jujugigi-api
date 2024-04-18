@@ -2,23 +2,38 @@
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
+# fly machine destroy --force 
+# fly scale count 3 --region iad,lax,ord
 
-app = 'jujugigi-api'
-primary_region = 'atl'
+app = "jujugigi-api"
+primary_region = "iad"
 
 [build]
+
+[deploy]
+  strategy = "rolling"
+  max-per-region = 1
+
+[env]
+  API_KEY = "prod"
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = false
+  auto_stop_machines = true
   auto_start_machines = false
   min_machines_running = 3
-  max_machines_running = 3
-  processes = ['app']
+  processes = ["app"]
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/"
 
 [[vm]]
   size = "shared-cpu-1x"
   cpus = 1
-  cpu_kind = 'shared'
-  memory = '256'
+  cpu_kind = "shared"
+  memory = "256"
