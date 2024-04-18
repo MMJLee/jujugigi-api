@@ -7,6 +7,6 @@ from app.models.response import HealthcheckResponse
 router = APIRouter()
 
 
-@router.get("", response_model=HealthcheckResponse)
+@router.get("/", response_model=HealthcheckResponse)
 async def healthcheck():
     return HealthcheckResponse()
