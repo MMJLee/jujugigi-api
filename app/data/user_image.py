@@ -70,3 +70,24 @@ class UserImageData:
             values={"user_image_id": user_image_id},
             column="deleted",
         )
+
+    async def read_unopened_image(self, user_email: str) -> int:
+        return await self._db.fetch_val(
+            query="""
+                WITH update_user_image as (
+                    UPDATE user_image
+                    SET opened = TRUE,
+                    updated_on = CURRENT_TIMESTAMP
+                    WHERE user_image_id = (
+                        SELECT user_image_id
+                        FROM user_image
+                        WHERE user_email = :user_email 
+                        AND opened = FALSE
+                        ORDER BY created_on ASC LIMIT 1
+                    ) RETURNING *
+                ) SELECT user_image_id 
+                FROM update_user_image
+            """,
+            values={"user_email": user_email},
+            column="user_image_id",
+        )

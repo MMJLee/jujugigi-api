@@ -36,7 +36,7 @@ class StripeLogic:
                 customer_email=user_email,
                 mode="payment",
                 success_url=self._domain_url + "/success",
-                cancel_url=self._domain_url + "/canceled",
+                cancel_url=self._domain_url,
                 automatic_tax={"enabled": True},
             )
         except Exception as e:

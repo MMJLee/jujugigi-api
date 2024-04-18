@@ -4,3 +4,5 @@
 **/.venv
 **/.env
 **/commands.md
+**/readme.md
+**/fly.yml

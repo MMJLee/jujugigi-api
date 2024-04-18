@@ -51,30 +51,54 @@ class ImageData:
             raise BaseError({"code": "create:image", "description": e}) from e
 
     async def read(
-        self, image_id: Optional[int] = None, user_email: Optional[str] = None, user_alias: Optional[str] = None, limit: int = 50, offset: int = 0
+        self,
+        image_id: Optional[int] = None,
+        user_email: Optional[str] = None,
+        user_alias: Optional[str] = None,
+        user_image_id: Optional[str] = None,
+        opened: Optional[bool] = None,
+        limit: int = 50,
+        offset: int = 0,
     ) -> Sequence[Optional[ImageResponse]]:
-        filter_statement = ""
+
+        filter_statement = "JOIN user_image ui ON i.image_id = ui.image_id "
         values = {"limit": limit, "offset": offset}
 
         if image_id:
-            filter_statement = "WHERE i.image_id = :image_id"
+            filter_statement = """
+                WHERE i.image_id = :image_id
+            """
             values["image_id"] = image_id
 
+        elif user_image_id:
+            filter_statement += """
+                WHERE ui.user_image_id = :user_image_id
+            """
+            values["user_image_id"] = user_image_id
+
         elif user_email:
-            filter_statement = "JOIN user_image ui ON i.image_id = ui.image_id WHERE ui.user_email = :user_email"
+            filter_statement += """
+                WHERE ui.user_email = :user_email
+            """
             values["user_email"] = user_email
 
         elif user_alias:
-            filter_statement = (
-                "JOIN user_image ui ON i.image_id = ui.image_id JOIN user_alias ua ON ui.user_email = ua.user_email WHERE ua.user_alias ILIKE :user_alias"
-            )
+            filter_statement += """
+                JOIN user_alias ua ON ui.user_email = ua.user_email 
+                WHERE ua.user_alias ILIKE :user_alias
+            """
             values["user_alias"] = user_alias
+
+        if opened is not None:
+            filter_statement += " AND ui.opened = :opened"
+            values["opened"] = opened
 
         records = await self._db.fetch_all(
             query=f"""
-                SELECT i.path, i.file_name, i.description, r.rarity_name
-                FROM image i JOIN rarity r on i.rarity_id = r.rarity_id
+                SELECT i.path, i.file_name, i.description, i.rarity
+                FROM image i
                 {filter_statement}
+                ORDER BY ui.created_on DESC
                 LIMIT :limit OFFSET :offset
             """,
             values=values,
@@ -120,7 +144,7 @@ class ImageData:
     async def read_random_unowned_image(self, user_email: str) -> Optional[int]:
         image_id = await self._db.fetch_val(
             query="""
-                SELECT i.image_id, -LOG(RANDOM())/i.rarity_id as priority 
+                SELECT i.image_id, -LOG(RANDOM())/i.rarity as priority 
                 FROM image i WHERE i.image_id NOT IN (
                     SELECT image_id FROM user_image ui WHERE ui.user_email = :user_email
                 ) ORDER BY priority DESC LIMIT 1;
