@@ -46,7 +46,7 @@ def get_application():
     fast_app.add_exception_handler(TokenError, token_exception_handler)
 
     # register api endpoints
-    fast_app.include_router(healthcheck.router, prefix="", tags=["healthcheck"])
+    fast_app.include_router(healthcheck.router, prefix="/", tags=["healthcheck"])
     fast_app.include_router(image.router, prefix=f"{base_url}/image", tags=["image"])
     fast_app.include_router(user_image.router, prefix=f"{base_url}/user_image", tags=["user_image"])
     fast_app.include_router(user_alias.router, prefix=f"{base_url}/user_alias", tags=["user_alias"])
