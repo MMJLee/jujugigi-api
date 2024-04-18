@@ -4,6 +4,7 @@
 #
 # fly machine destroy --force 
 # fly scale count 3 --region iad,lax,ord
+# fly restart
 
 app = "jujugigi-api"
 primary_region = "iad"
@@ -20,7 +21,7 @@ primary_region = "iad"
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = false
   min_machines_running = 3
   processes = ["app"]
