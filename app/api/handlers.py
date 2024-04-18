@@ -1,5 +1,5 @@
 # third party imports
-from fastapi import encoders, responses
+from fastapi import Request, encoders, responses
 from starlette import status
 
 # module imports
@@ -16,7 +16,7 @@ def required_value_handler(exc: RequiredValueError) -> responses.JSONResponse:
     return responses.JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=content)
 
 
-def auth_exception_handler(exc: AuthError) -> responses.JSONResponse:
+def auth_exception_handler(_: Request, exc: AuthError) -> responses.JSONResponse:
     content = encoders.jsonable_encoder(vars(exc))
     return responses.JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content=content)
 

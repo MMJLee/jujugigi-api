@@ -8,13 +8,15 @@ from pydantic import BaseModel, Field
 
 class UserImageBase(BaseModel):
     user_email: Optional[str] = Field(None, title="email of user")
-    image_id: int = Field(..., title="id of image")
+    image_id: Optional[int] = Field(None, title="id of image")
+    opened: Optional[bool] = Field(None, title="opened status of image")
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
                     "user_email": "example@email.com",
                     "image_id": "1",
+                    "opened": "false",
                 }
             ]
         }
@@ -30,6 +32,7 @@ class UserImageCreate(UserImageBase):
                 {
                     "user_email": "example@email.com",
                     "image_id": "1",
+                    "opened": "false",
                     "created_by": "dataload",
                     "updated_by": "dataload",
                 }
@@ -47,6 +50,7 @@ class UserImageUpdate(UserImageBase):
                 {
                     "user_email": "example@email.com",
                     "image_id": "1",
+                    "opened": "false",
                     "updated_by": "dataload",
                     "updated_on": "2021-05-18 13:19:06",
                 }
@@ -68,6 +72,7 @@ class UserImage(UserImageBase):
                     "user_image_id": "1",
                     "user_email": "example@email.com",
                     "image_id": "1",
+                    "opened": "false",
                     "created_by": "dataload",
                     "created_on": "2021-05-18 13:19:06",
                     "updated_by": "dataload",

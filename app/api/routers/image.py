@@ -52,30 +52,29 @@ async def read(
         scopes=[],
     ),
     image_logic: ImageLogic = Depends(image_logic_dependency),
-    image_id: Optional[int] = Query(None),
     user_email: Optional[str] = Query(None),
     user_alias: Optional[str] = Query(None),
-    limit: int = Query(50, ge=50),
+    opened: Optional[bool] = Query(None),
+    limit: int = Query(50, ge=1),
     offset: int = Query(0, ge=0),
 ):
 
     _ = auth_info
-    return await image_logic.read(image_id=image_id, user_email=user_email, user_alias=user_alias, limit=limit, offset=offset)
+    return await image_logic.read(user_email=user_email, user_alias=user_alias, opened=opened, limit=limit, offset=offset)
 
 
-@router.put("/{image_id}", response_model=UpdateResponse)
+@router.put("/", response_model=UpdateResponse)
 async def update(
     auth_info: str = Security(
         authorize_user,
         scopes=[f"{CRUDOperation.UPDATE.value}:{ResourceType.IMAGE.value}"],
     ),
     image_logic: ImageLogic = Depends(image_logic_dependency),
-    image_id: int = Path(..., title="image_id"),
     image: ImageBase = Body(..., title="update image"),
 ):
 
     user_email = auth_info
-    updated = await image_logic.update(image_id=image_id, image=image, user_email=user_email)
+    updated = await image_logic.update(image=image, user_email=user_email)
     return UpdateResponse(updated=updated)
 
 
@@ -92,3 +91,16 @@ async def delete(
     _ = auth_info
     deleted = await image_logic.delete(image_id=image_id)
     return DeleteResponse(deleted=deleted)
+
+
+@router.put("/open", response_model=Sequence[Optional[ImageResponse]])
+async def open_image(
+    auth_info: str = Security(
+        authorize_user,
+        scopes=[],
+    ),
+    image_logic: ImageLogic = Depends(image_logic_dependency),
+):
+
+    user_email = auth_info
+    return await image_logic.open_image(user_email=user_email)

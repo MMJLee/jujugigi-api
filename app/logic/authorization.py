@@ -11,7 +11,6 @@ from jose import jwt
 from app.exceptions import TokenError
 from app.config import get_settings
 
-
 config_settings = get_settings()
 
 

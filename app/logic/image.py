@@ -21,15 +21,13 @@ class ImageLogic:
         self._user_image_data = user_image_data
 
     async def create(self, image_file: UploadFile, user_email: str) -> int:
-        pattern = r"^[GgJj][1-5]_[a-z0-9_]+[.][a-z]{3,4}$"
+        pattern = r"^[1-5]_[a-z0-9_]+[.][a-z]{3,4}$"
         if re.match(pattern, image_file.filename, re.IGNORECASE):
-            subject_map = {"g": "Geneva", "j": "Juniper"}
             image = ImageCreate(
-                subject=subject_map[image_file.filename[0].lower()],
                 path="images",
                 file_name=image_file.filename,
-                description=image_file.filename[3 : image_file.filename.rfind(".")].replace("_", " "),
-                rarity_id=image_file.filename[1],
+                description=image_file.filename[image_file.filename.find("_") : image_file.filename.rfind(".")].replace("_", " "),
+                rarity=image_file.filename[0],
                 created_by=user_email,
                 updated_by=user_email,
             )
@@ -45,9 +43,9 @@ class ImageLogic:
         return count
 
     async def read(
-        self, image_id: Optional[int], user_email: Optional[str], user_alias: Optional[str], limit: int, offset: int
+        self, user_email: Optional[str], user_alias: Optional[str], opened: Optional[bool], limit: int, offset: int
     ) -> Sequence[Optional[ImageResponse]]:
-        return await self._image_data.read(image_id=image_id, user_email=user_email, user_alias=user_alias, limit=limit, offset=offset)
+        return await self._image_data.read(user_email=user_email, user_alias=user_alias, opened=opened, limit=limit, offset=offset)
 
     async def update(self, image_id: int, image: ImageBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
@@ -59,7 +57,12 @@ class ImageLogic:
 
     async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
         image_id = await self._image_data.read_random_unowned_image(user_email=user_email)
-        user_image = UserImageCreate(user_email=user_email, image_id=image_id, created_by=user_email, updated_by=user_email)
-        res = await self._user_image_data.create(user_image=user_image)
-        if res:
-            return await self._image_data.read(image_id)
+        user_image = UserImageCreate(user_email=user_email, image_id=image_id, opened=False, created_by=user_email, updated_by=user_email)
+        return await self._user_image_data.create(user_image=user_image)
+
+    async def open_image(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
+        user_image_id = await self._user_image_data.read_unopened_image(user_email=user_email)
+        if user_image_id:
+            return await self._image_data.read(user_image_id=user_image_id)
+        else:
+            return await self._image_data.read(image_id=1)
