@@ -44,11 +44,8 @@ def get_stripe_secret_key(request: Request) -> str:
     return request.app.state.config.STRIPE_SECRET_KEY
 
 
-def get_stripe_product_map(request: Request) -> dict[str, str]:
-    return {
-        "Geneva": request.app.state.config.STRIPE_GENEVA_PRICE_ID,
-        "Juniper": request.app.state.config.STRIPE_JUNIPER_PRICE_ID,
-    }
+def get_stripe_price_id(request: Request) -> dict[str, str]:
+    return request.app.state.config.STRIPE_PRICE_ID
 
 
 def get_stripe_webhook_secret(request: Request) -> str:
@@ -117,7 +114,7 @@ def user_alias_logic_dependency(
 def stripe_logic_dependency(
     stripe_data: StripeData = Depends(stripe_data_dependency),
     stripe_secret_key: str = Depends(get_stripe_secret_key),
-    stripe_product_map: dict[str, str] = Depends(get_stripe_product_map),
+    stripe_price_id: str = Depends(get_stripe_price_id),
     stripe_webhook_secret: str = Depends(get_stripe_webhook_secret),
     domain_url: str = Depends(get_domain),
     image_logic: ImageLogic = Depends(image_logic_dependency),
@@ -125,7 +122,7 @@ def stripe_logic_dependency(
     return StripeLogic(
         stripe_data=stripe_data,
         stripe_secret_key=stripe_secret_key,
-        stripe_product_map=stripe_product_map,
+        stripe_price_id=stripe_price_id,
         stripe_webhook_secret=stripe_webhook_secret,
         domain_url=domain_url,
         image_logic=image_logic,

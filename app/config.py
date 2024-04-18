@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     API_VERSION: str = "1.0.0"
     API_MAJOR_VERSION: str = API_VERSION.split(".", maxsplit=1)[0]
     API_TITLE: str = f"jujugigi-api-v{API_MAJOR_VERSION}"
+    CLIENT_DOMAIN: str = os.environ.get("DEV_DOMAIN")
 
     # DB connection pool settings
     MIN_DB_POOL_SIZE: int = 1
@@ -48,10 +49,8 @@ class Settings(BaseSettings):
     SUPABASE_URL_TIMEOUT: int = os.environ.get("SUPABASE_URL_TIMEOUT")
 
     # Stripe - DEV
-    CLIENT_DOMAIN: str = os.environ.get("DEV_DOMAIN")
     STRIPE_SECRET_KEY: str = os.environ.get("DEV_STRIPE_SECRET_KEY")
-    STRIPE_GENEVA_PRICE_ID: str = os.environ.get("DEV_STRIPE_GENEVA_PRICE_ID")
-    STRIPE_JUNIPER_PRICE_ID: str = os.environ.get("DEV_STRIPE_JUNIPER_PRICE_ID")
+    STRIPE_PRICE_ID: str = os.environ.get("DEV_STRIPE_PRICE_ID")
     STRIPE_WEBHOOK_SECRET: str = os.environ.get("DEV_STRIPE_WEBHOOK_SECRET")
 
 
@@ -75,8 +74,7 @@ if env == "prod":
 
         # Stripe - PROD
         STRIPE_SECRET_KEY: str = os.environ.get("PROD_STRIPE_SECRET_KEY")
-        STRIPE_GENEVA_PRICE_ID: str = os.environ.get("PROD_STRIPE_GENEVA_PRICE_ID")
-        STRIPE_JUNIPER_PRICE_ID: str = os.environ.get("PROD_STRIPE_JUNIPER_PRICE_ID")
+        STRIPE_PRICE_ID: str = os.environ.get("PROD_STRIPE_PRICE_ID")
         STRIPE_WEBHOOK_SECRET: str = os.environ.get("PROD_STRIPE_WEBHOOK_SECRET")
 
 

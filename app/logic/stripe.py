@@ -16,23 +16,22 @@ class StripeLogic:
         self,
         stripe_data: StripeData,
         stripe_secret_key: str,
-        stripe_product_map: dict[str, str],
+        stripe_price_id: str,
         stripe_webhook_secret: str,
         domain_url: str,
         image_logic: ImageLogic,
     ):
         stripe.api_key = stripe_secret_key
         self._stripe_data = stripe_data
-        self._stripe_product_map = stripe_product_map
+        self._stripe_price_id = stripe_price_id
         self._stripe_webhook_secret = stripe_webhook_secret
         self._domain_url = domain_url
         self._image_logic = image_logic
 
     async def create(self, user_email: str) -> str:
-        products = [{"id": "Geneva", "quantity": 1}]
         try:
             checkout_session = stripe.checkout.Session.create(
-                line_items=[{"price": self._stripe_product_map[product["id"]], "quantity": product["quantity"]} for product in products],
+                line_items=[{"price": self._stripe_price_id, "quantity": 1}],
                 customer_email=user_email,
                 mode="payment",
                 success_url=self._domain_url + "/success",
@@ -51,15 +50,11 @@ class StripeLogic:
             stripe_response_body_json = json.loads(stripe_response_body.decode("utf-8"))
             payment_id = "error"
             event_type = stripe_response_body_json["type"]
-            if event_type == "payment_intent.created":
-                payment_id = stripe_response_body_json["data"]["object"]["id"]
-            elif event_type == "charge.succeeded":
+            if event_type == "charge.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["payment_intent"]
                 await self._image_logic.gacha(stripe_response_body_json["data"]["object"]["billing_details"]["email"])
             elif event_type == "payment_intent.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["id"]
-            elif event_type == "checkout.session.completed":
-                payment_id = stripe_response_body_json["data"]["object"]["payment_intent"]
 
             stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
             return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
