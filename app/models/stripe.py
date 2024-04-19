@@ -1,5 +1,5 @@
 # standard lib imports
-from typing import Any, Optional
+from typing import Any
 from datetime import datetime
 
 # third party imports

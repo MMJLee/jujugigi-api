@@ -11,7 +11,7 @@ from fastapi import UploadFile
 from app.exceptions import BaseError
 from app.data.image import ImageData
 from app.data.user_image import UserImageData
-from app.models.image import ImageBase, ImageCreate, ImageUpdate, ImageResponse
+from app.models.image import ImageCreate, ImageUpdate, ImageResponse
 from app.models.user_image import UserImageCreate
 
 
