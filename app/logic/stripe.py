@@ -28,7 +28,7 @@ class StripeLogic:
         self._domain_url = domain_url
         self._image_logic = image_logic
 
-    async def create(self, user_email: str) -> str:
+    async def read(self, user_email: str) -> str:
         try:
             checkout_session = stripe.checkout.Session.create(
                 line_items=[{"price": self._stripe_price_id, "quantity": 1}],
@@ -53,11 +53,13 @@ class StripeLogic:
             if event_type == "charge.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["payment_intent"]
                 await self._image_logic.gacha(stripe_response_body_json["data"]["object"]["billing_details"]["email"])
+                stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
+                return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
             elif event_type == "payment_intent.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["id"]
-
-            stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
-            return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
+                stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
+                return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
+            return 1
         except KeyError as e:
             raise BaseError({"code": "stripe_email", "description": e}) from e
         except ValueError as e:

@@ -17,8 +17,8 @@ async def parse_body(request: Request):
     return data
 
 
-@router.post("", response_model=StripeResponse)
-async def create(
+@router.get("", response_model=StripeResponse)
+async def read(
     auth_info: str = Security(
         authorize_user,
         scopes=[],
@@ -27,7 +27,7 @@ async def create(
 ):
 
     user_email = auth_info
-    stripe_url = await stripe_logic.create(user_email=user_email)
+    stripe_url = await stripe_logic.read(user_email=user_email)
     return StripeResponse(url=stripe_url)
 
 

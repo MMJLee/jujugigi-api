@@ -1,5 +1,5 @@
 # standard lib imports
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
 # third party imports
 from databases import Database
@@ -25,8 +25,8 @@ class ImageData:
             self._supabase_client.storage.from_(self._supabase_bucket).upload(
                 path=f"images/{image_file.filename}", file=image_file.file.read(), file_options={"content-type": image_file.content_type}
             )
-        except StorageException:  # if dupe, continue to adding database record
-            pass
+        except StorageException as e:
+            raise BaseError({"code": "create:supabase", "description": e}) from e
         except Exception as e:
             raise BaseError({"code": "create:image", "description": e}) from e
 
@@ -111,22 +111,37 @@ class ImageData:
                 image_response.append(ImageResponse(**dict(record), signedURL=image_details[i].get("signedURL")))
         return image_response
 
-    async def update(self, image_id: int, image: ImageUpdate) -> int:
+    async def read_all(self) -> Sequence[Optional[Any]]:
+        images = self._supabase_client.storage.from_(self._supabase_bucket).list("images")
+        return [image["name"] for image in images]
+
+    async def update(self, image: ImageUpdate, image_file: UploadFile) -> int:
+        try:
+            self._supabase_client.storage.from_(self._supabase_bucket).update(
+                path=f"images/{image_file.filename}", file=image_file.file.read(), file_options={"content-type": image_file.content_type, "upsert": "true"}
+            )
+        except StorageException as e:
+            raise BaseError({"code": "update:supabase", "description": e}) from e
+        except Exception as e:
+            raise BaseError({"code": "update:image", "description": e}) from e
+
         mapped_dict = image.model_dump()
-        mapped_dict["image_id"] = image_id
         update_statement = build_update_statement(mapped_dict=mapped_dict)
 
-        return await self._db.fetch_val(
-            query=f"""
-                WITH update_image as (
+        try:
+            return await self._db.fetch_val(
+                query=f"""
+                    WITH update_image as (
                     UPDATE image SET {update_statement}
-                    WHERE image_id = :image_id RETURNING *
-                ) SELECT COUNT(*) as updated 
-                FROM update_image
-            """,
-            values=mapped_dict,
-            column="updated",
-        )
+                        WHERE file_name = :file_name RETURNING *
+                    ) SELECT COUNT(*) as updated 
+                    FROM update_image
+                """,
+                values=mapped_dict,
+                column="updated",
+            )
+        except Exception as e:
+            raise BaseError({"code": "update:image", "description": e}) from e
 
     async def delete(self, image_id: int) -> int:
         return await self._db.fetch_val(
