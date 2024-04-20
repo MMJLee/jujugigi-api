@@ -116,21 +116,24 @@ class ImageData:
         images = self._supabase_client.storage.from_(self._supabase_bucket).list("images")
         return [image["name"] for image in images]
 
-    async def update(self, image: ImageUpdate, image_file: UploadFile) -> int:
+    async def upsert(self, image: ImageUpdate, image_file: UploadFile) -> int:
         mapped_dict = image.model_dump()
+        fields_statement, values_statement = build_insert_statement(mapped_dict=mapped_dict)
         update_statement = build_update_statement(mapped_dict=mapped_dict)
-
         try:
-            updated = await self._db.fetch_val(
+            upserted = await self._db.fetch_val(
                 query=f"""
-                    WITH update_image as (
-                    UPDATE image SET {update_statement}
-                        WHERE file_name = :file_name RETURNING *
-                    ) SELECT COUNT(*) as updated 
-                    FROM update_image
-                """,
+            WITH upsert_image as (
+                INSERT INTO image ({fields_statement})
+                    VALUES ({values_statement})
+                    ON CONFLICT (file_name)
+                DO UPDATE SET {update_statement}
+                    RETURNING *
+                ) SELECT COUNT(*) as upserted 
+                FROM upsert_image            
+            """,
                 values=mapped_dict,
-                column="updated",
+                column="upserted",
             )
         except Exception as e:
             raise BaseError({"code": "update:image", "description": e}) from e
@@ -143,8 +146,7 @@ class ImageData:
             raise BaseError({"code": "update:supabase", "description": e}) from e
         except Exception as e:
             raise BaseError({"code": "update:image", "description": e}) from e
-
-        return updated
+        return upserted
 
     async def delete(self, image_id: int) -> int:
         return await self._db.fetch_val(

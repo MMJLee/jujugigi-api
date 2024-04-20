@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS public.stripe (
 );
 CREATE INDEX IF NOT EXISTS stripe_index_payment_id ON public.stripe (payment_id);
 
-
 CREATE VIEW public.rankings AS (
     SELECT 
         ua.user_alias, 

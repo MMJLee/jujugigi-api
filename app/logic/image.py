@@ -41,7 +41,7 @@ class ImageLogic:
         count = 0
         for image_file in image_files:
             if image_file.filename in existing_images:
-                count += await self.update(image_file=image_file, user_email=user_email)
+                count += await self.upsert(image_file=image_file, user_email=user_email)
             else:
                 count += await self.create(image_file=image_file, user_email=user_email)
         return count
@@ -51,7 +51,7 @@ class ImageLogic:
     ) -> Sequence[Optional[ImageResponse]]:
         return await self._image_data.read(user_email=user_email, user_alias=user_alias, opened=opened, limit=limit, offset=offset)
 
-    async def update(self, image_file: UploadFile, user_email: str) -> int:
+    async def upsert(self, image_file: UploadFile, user_email: str) -> int:
         image_file.file.seek(0)
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
         pattern = r"^[1-5]_[a-z0-9_']+[.][a-z]{3,4}$"
@@ -64,7 +64,7 @@ class ImageLogic:
                 updated_by=user_email,
                 updated_on=now,
             )
-            return await self._image_data.update(image=image, image_file=image_file)
+            return await self._image_data.upsert(image=image, image_file=image_file)
         else:
             raise BaseError({"code": "create:image", "description": "Incorrect file name schema"})
 
