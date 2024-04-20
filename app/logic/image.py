@@ -72,12 +72,13 @@ class ImageLogic:
         return await self._image_data.delete(image_id=image_id)
 
     async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
-        image_id = await self._image_data.read_random_unowned_image(user_email=user_email)
-        user_image = UserImageCreate(user_email=user_email, image_id=image_id, opened=False, created_by=user_email, updated_by=user_email)
-        return await self._user_image_data.create(user_image=user_image)
+        image_id_1, image_id_2 = await self._image_data.read_random_unowned_images(user_email=user_email)
+        user_image_1 = UserImageCreate(user_email=user_email, image_id=image_id_1, opened=False, created_by=user_email, updated_by=user_email)
+        user_image_2 = UserImageCreate(user_email=user_email, image_id=image_id_2, opened=False, created_by=user_email, updated_by=user_email)
+        return await self._user_image_data.create(user_image=user_image_1) + await self._user_image_data.create(user_image=user_image_2)
 
     async def open_image(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
-        user_image_id = await self._user_image_data.read_unopened_image(user_email=user_email)
+        user_image_id = await self._user_image_data.open_image(user_email=user_email)
         if user_image_id:
             return await self._image_data.read(user_image_id=user_image_id)
         else:

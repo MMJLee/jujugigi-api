@@ -156,17 +156,16 @@ class ImageData:
             column="deleted",
         )
 
-    async def read_random_unowned_image(self, user_email: str) -> Optional[int]:
-        image_id = await self._db.fetch_val(
+    async def read_random_unowned_images(self, user_email: str) -> tuple[int, int]:
+        records = await self._db.fetch_all(
             query="""
                 SELECT i.image_id, -LOG(RANDOM())/i.rarity as priority 
                 FROM image i WHERE i.image_id NOT IN (
                     SELECT image_id FROM user_image ui WHERE ui.user_email = :user_email
-                ) ORDER BY priority DESC LIMIT 1;
+                ) ORDER BY priority DESC LIMIT 2;
             """,
             values={"user_email": user_email},
-            column="image_id",
         )
-        if image_id:
-            return image_id
+        if records:
+            return (records[0]["image_id"], records[1]["image_id"])
         raise BaseError({"code": "gacha", "description": "You already own all images"})

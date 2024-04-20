@@ -31,7 +31,7 @@ class StripeLogic:
     async def read(self, user_email: str) -> str:
         try:
             checkout_session = stripe.checkout.Session.create(
-                line_items=[{"price": self._stripe_price_id, "quantity": 1}],
+                line_items=[{"price": self._stripe_price_id, "quantity": 2}],
                 customer_email=user_email,
                 mode="payment",
                 success_url=self._domain_url + "/success",
@@ -44,7 +44,6 @@ class StripeLogic:
         return checkout_session.url
 
     async def webhook(self, stripe_response_header: str, stripe_response_body: bytes) -> int:
-
         try:
             _ = stripe.Webhook.construct_event(payload=stripe_response_body, sig_header=stripe_response_header, secret=self._stripe_webhook_secret)
             stripe_response_body_json = json.loads(stripe_response_body.decode("utf-8"))

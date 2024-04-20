@@ -28,6 +28,22 @@ class UserImageData:
             column="created",
         )
 
+    async def bulk_create(self, user_images: Sequence[UserImageCreate]) -> int:
+
+        mapped_dict = user_images.model_dump()
+        fields_statement, values_statement = build_insert_statement(mapped_dict=mapped_dict)
+        return await self._db.fetch_val(
+            query=f"""
+                WITH create_user_image AS (
+                    INSERT INTO user_image ({fields_statement})
+                    VALUES ({values_statement}) RETURNING *
+                ) SELECT COUNT(*) as created 
+                FROM create_user_image;
+            """,
+            values=mapped_dict,
+            column="created",
+        )
+
     async def read(self, limit: int, offset: int) -> Sequence[Optional[UserImage]]:
         records = await self._db.fetch_all(query="SELECT * FROM user_image LIMIT :limit OFFSET :offset", values={"limit": limit, "offset": offset})
         return [UserImage(**dict(record)) for record in records]
@@ -71,7 +87,7 @@ class UserImageData:
             column="deleted",
         )
 
-    async def read_unopened_image(self, user_email: str) -> int:
+    async def open_image(self, user_email: str) -> int:
         return await self._db.fetch_val(
             query="""
                 WITH update_user_image as (
