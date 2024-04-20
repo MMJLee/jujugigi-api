@@ -37,7 +37,7 @@ class ImageLogic:
             raise BaseError({"code": "create:image", "description": "Incorrect file name schema"})
 
     async def bulk_create(self, image_files: Sequence[UploadFile], user_email: str) -> int:
-        existing_images = await self._image_data.read_all()
+        existing_images = await self._image_data.read_s3()
         count = 0
         for image_file in image_files:
             if image_file.filename in existing_images:

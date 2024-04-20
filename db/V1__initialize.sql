@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS public.user_alias (
 
 CREATE TABLE IF NOT EXISTS public.user_image (
     user_image_id serial NOT NULL,
-    user_email varchar NOT NULL REFERENCES public.user_alias (user_email),
-    image_id int NOT NULL REFERENCES public.image (image_id),
+    user_email varchar NOT NULL REFERENCES public.user_alias (user_email) ON UPDATE CASCADE,
+    image_id int NOT NULL REFERENCES public.image (image_id) ON UPDATE CASCADE,
     opened bool NOT NULL default false,
     created_by varchar NOT NULL default 'jujugigi-api',
     created_on timestamptz NOT NULL default current_timestamp,
@@ -52,7 +52,6 @@ CREATE TABLE IF NOT EXISTS public.stripe (
     type varchar,
     CONSTRAINT stripe_pk PRIMARY KEY (event_id)
 );
-
 CREATE INDEX IF NOT EXISTS stripe_index_payment_id ON public.stripe (payment_id);
 
 

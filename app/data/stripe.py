@@ -32,9 +32,9 @@ class StripeData:
                     ON CONFLICT (event_id)
                 DO UPDATE SET {update_statement}
                     RETURNING *
-                ) SELECT COUNT(*) as updated 
+                ) SELECT COUNT(*) as upserted 
                 FROM upsert_stripe
             """,
             values=mapped_dict,
-            column="updated",
+            column="upserted",
         )

@@ -51,9 +51,10 @@ class StripeLogic:
             event_type = stripe_response_body_json["type"]
             if event_type == "charge.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["payment_intent"]
-                await self._image_logic.gacha(stripe_response_body_json["data"]["object"]["billing_details"]["email"])
                 stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
-                return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
+                upserted = await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
+                await self._image_logic.gacha(stripe_response_body_json["data"]["object"]["billing_details"]["email"])
+                return upserted
             elif event_type == "payment_intent.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["id"]
                 stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)

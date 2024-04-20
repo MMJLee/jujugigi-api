@@ -21,20 +21,11 @@ class ImageData:
         self._supabase_url_timeout = supabase_url_timeout
 
     async def create(self, image: ImageCreate, image_file: UploadFile) -> int:
-        try:
-            self._supabase_client.storage.from_(self._supabase_bucket).upload(
-                path=f"images/{image_file.filename}", file=image_file.file.read(), file_options={"content-type": image_file.content_type}
-            )
-        except StorageException as e:
-            raise BaseError({"code": "create:supabase", "description": e}) from e
-        except Exception as e:
-            raise BaseError({"code": "create:image", "description": e}) from e
-
         mapped_dict = image.model_dump()
         fields_statement, values_statement = build_insert_statement(image.model_dump())
 
         try:
-            return await self._db.fetch_val(
+            created = await self._db.fetch_val(
                 query=f"""
                     WITH create_image AS (
                         INSERT INTO image({fields_statement})
@@ -45,10 +36,20 @@ class ImageData:
                 values=mapped_dict,
                 column="created",
             )
-        except UniqueViolationError:  # if dupe, return created
-            return 1
+        except UniqueViolationError:
+            pass
         except Exception as e:
             raise BaseError({"code": "create:image", "description": e}) from e
+
+        try:
+            self._supabase_client.storage.from_(self._supabase_bucket).upload(
+                path=f"images/{image_file.filename}", file=image_file.file.read(), file_options={"content-type": image_file.content_type}
+            )
+        except StorageException as e:
+            raise BaseError({"code": "create:supabase", "description": e}) from e
+        except Exception as e:
+            raise BaseError({"code": "create:image", "description": e}) from e
+        return created
 
     async def read(
         self,
@@ -111,25 +112,16 @@ class ImageData:
                 image_response.append(ImageResponse(**dict(record), signedURL=image_details[i].get("signedURL")))
         return image_response
 
-    async def read_all(self) -> Sequence[Optional[Any]]:
+    async def read_s3(self) -> Sequence[Optional[Any]]:
         images = self._supabase_client.storage.from_(self._supabase_bucket).list("images")
         return [image["name"] for image in images]
 
     async def update(self, image: ImageUpdate, image_file: UploadFile) -> int:
-        try:
-            self._supabase_client.storage.from_(self._supabase_bucket).update(
-                path=f"images/{image_file.filename}", file=image_file.file.read(), file_options={"content-type": image_file.content_type, "upsert": "true"}
-            )
-        except StorageException as e:
-            raise BaseError({"code": "update:supabase", "description": e}) from e
-        except Exception as e:
-            raise BaseError({"code": "update:image", "description": e}) from e
-
         mapped_dict = image.model_dump()
         update_statement = build_update_statement(mapped_dict=mapped_dict)
 
         try:
-            return await self._db.fetch_val(
+            updated = await self._db.fetch_val(
                 query=f"""
                     WITH update_image as (
                     UPDATE image SET {update_statement}
@@ -142,6 +134,17 @@ class ImageData:
             )
         except Exception as e:
             raise BaseError({"code": "update:image", "description": e}) from e
+
+        try:
+            self._supabase_client.storage.from_(self._supabase_bucket).update(
+                path=f"images/{image_file.filename}", file=image_file.file.read(), file_options={"content-type": image_file.content_type, "upsert": "true"}
+            )
+        except StorageException as e:
+            raise BaseError({"code": "update:supabase", "description": e}) from e
+        except Exception as e:
+            raise BaseError({"code": "update:image", "description": e}) from e
+
+        return updated
 
     async def delete(self, image_id: int) -> int:
         return await self._db.fetch_val(
