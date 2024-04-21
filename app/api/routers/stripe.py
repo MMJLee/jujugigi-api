@@ -1,11 +1,10 @@
 # third party imports
-from fastapi import APIRouter, Depends, Path, Request, Security, Header
+from fastapi import APIRouter, Depends, Query, Request, Security, Header
 
 # module imports
 from app.api.dependencies import stripe_logic_dependency, authorize_user
-from app.logic.authorization import CRUDOperation, ResourceType
 from app.logic.stripe import StripeLogic
-from app.models.response import DeleteResponse, UpdateResponse
+from app.models.response import UpdateResponse
 from app.models.stripe import StripeResponse
 
 
@@ -24,10 +23,11 @@ async def read(
         scopes=[],
     ),
     stripe_logic: StripeLogic = Depends(stripe_logic_dependency),
+    quantity: int = Query(2, ge=2, le=10),
 ):
 
     user_email = auth_info
-    stripe_url = await stripe_logic.read(user_email=user_email)
+    stripe_url = await stripe_logic.read(user_email=user_email, quantity=quantity)
     return StripeResponse(url=stripe_url)
 
 
@@ -39,18 +39,3 @@ async def webhook(
 ):
     updated = await stripe_logic.webhook(stripe_response_header=stripe_response_header, stripe_response_body=stripe_response_body)
     return UpdateResponse(updated=updated)
-
-
-@router.delete("/{stripe_id}", response_model=DeleteResponse)
-async def delete(
-    auth_info: str = Security(
-        authorize_user,
-        scopes=[f"{CRUDOperation.DELETE.value}:{ResourceType.STRIPE.value}"],
-    ),
-    stripe_logic: StripeLogic = Depends(stripe_logic_dependency),
-    stripe_id: int = Path(..., title="stripe id"),
-):
-
-    _ = auth_info
-    deleted = await stripe_logic.delete(stripe_id=stripe_id)
-    return DeleteResponse(deleted=deleted)

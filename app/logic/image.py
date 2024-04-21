@@ -37,8 +37,8 @@ class ImageLogic:
             raise BaseError({"code": "create:image", "description": "Incorrect file name schema"})
 
     async def bulk_create(self, image_files: Sequence[UploadFile], user_email: str) -> int:
-        existing_images = await self._image_data.read_s3()
         count = 0
+        existing_images = await self._image_data.read_s3()
         for image_file in image_files:
             if image_file.filename in existing_images:
                 count += await self.upsert(image_file=image_file, user_email=user_email)
@@ -71,11 +71,14 @@ class ImageLogic:
     async def delete(self, image_id: int) -> int:
         return await self._image_data.delete(image_id=image_id)
 
-    async def gacha(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
-        image_id_1, image_id_2 = await self._image_data.read_random_unowned_images(user_email=user_email)
-        user_image_1 = UserImageCreate(user_email=user_email, image_id=image_id_1, opened=False, created_by=user_email, updated_by=user_email)
-        user_image_2 = UserImageCreate(user_email=user_email, image_id=image_id_2, opened=False, created_by=user_email, updated_by=user_email)
-        return await self._user_image_data.create(user_image=user_image_1) + await self._user_image_data.create(user_image=user_image_2)
+    async def gacha(self, user_email: str, quantity: int) -> int:
+        count = 0
+        image_ids = await self._image_data.read_random_unowned_images(user_email=user_email, quantity=quantity)
+        for image_id in image_ids:
+            count += await self._user_image_data.create(
+                user_image=UserImageCreate(user_email=user_email, image_id=image_id, opened=False, created_by=user_email, updated_by=user_email)
+            )
+        return count
 
     async def open_image(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
         user_image_id = await self._user_image_data.open_image(user_email=user_email)
@@ -83,3 +86,6 @@ class ImageLogic:
             return await self._image_data.read(user_image_id=user_image_id)
         else:
             return []
+
+    async def read_random_unowned_images(self, user_email: str, quantity: int) -> Sequence[Optional[int]]:
+        return await self._image_data.read_random_unowned_images(user_email=user_email, quantity=quantity)

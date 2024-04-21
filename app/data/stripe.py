@@ -14,10 +14,6 @@ class StripeData:
     def __init__(self, db: Database) -> None:
         self._db = db
 
-    async def read(self, limit: int, offset: int) -> Sequence[Optional[StripeWebhook]]:
-        records = await self._db.fetch_all(query="SELECT * FROM stripe LIMIT :limit OFFSET :offset", values={"limit": limit, "offset": offset})
-        return [StripeWebhook(**dict(record)) for record in records]
-
     async def upsert(self, stripe_update: StripeWebhook) -> int:
         mapped_dict = stripe_update.model_dump()
         mapped_dict["data"] = json.dumps(mapped_dict["data"])

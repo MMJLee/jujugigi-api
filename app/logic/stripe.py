@@ -28,10 +28,13 @@ class StripeLogic:
         self._domain_url = domain_url
         self._image_logic = image_logic
 
-    async def read(self, user_email: str) -> str:
+    async def read(self, user_email: str, quantity: int) -> str:
+        records = await self._image_logic.read_random_unowned_images(user_email=user_email, quantity=quantity)
+        if len(records) != quantity:
+            raise BaseError({"code": "gacha", "description": "You already own all images"})
         try:
             checkout_session = stripe.checkout.Session.create(
-                line_items=[{"price": self._stripe_price_id, "quantity": 2}],
+                line_items=[{"price": self._stripe_price_id, "quantity": quantity}],
                 customer_email=user_email,
                 mode="payment",
                 success_url=self._domain_url + "/success",
@@ -40,7 +43,6 @@ class StripeLogic:
             )
         except Exception as e:
             raise BaseError({"code": "stripe_create", "description": e}) from e
-
         return checkout_session.url
 
     async def webhook(self, stripe_response_header: str, stripe_response_body: bytes) -> int:
@@ -51,15 +53,9 @@ class StripeLogic:
             event_type = stripe_response_body_json["type"]
             if event_type == "charge.succeeded":
                 payment_id = stripe_response_body_json["data"]["object"]["payment_intent"]
-                stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
-                upserted = await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
-                await self._image_logic.gacha(stripe_response_body_json["data"]["object"]["billing_details"]["email"])
-                return upserted
-            elif event_type == "payment_intent.succeeded":
-                payment_id = stripe_response_body_json["data"]["object"]["id"]
-                stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
-                return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
-            return 1
+                await self._image_logic.gacha(user_email=stripe_response_body_json["data"]["object"]["billing_details"]["email"], quantity=2)
+            stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
+            return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
         except KeyError as e:
             raise BaseError({"code": "stripe_email", "description": e}) from e
         except ValueError as e:
