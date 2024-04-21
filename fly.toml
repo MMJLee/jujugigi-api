@@ -3,11 +3,11 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 # fly machine destroy --force 
-# fly scale count 3 --region iad,lax,ord
+# fly scale count 3 --region atl,ord,den
 # fly restart
 
 app = "jujugigi-api"
-primary_region = "iad"
+primary_region = "atl"
 
 [build]
 
