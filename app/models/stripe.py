@@ -8,7 +8,6 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class StripeWebhook(BaseModel):
     event_id: str = Field(..., title="stripe event id", alias="id")
-    payment_id: str = Field(..., title="stripe payment id")
     object: str = Field(..., title="stripe object")
     api_version: datetime = Field(..., title="datetime of stripe api version")
     created_on: datetime = Field(..., title="creation time of stripe object", alias="created")
