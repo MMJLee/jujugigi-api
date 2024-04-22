@@ -37,6 +37,7 @@ class StripeLogic:
                 line_items=[{"price": self._stripe_price_id, "quantity": quantity}],
                 customer_email=user_email,
                 mode="payment",
+                allow_promotion_codes=True,
                 success_url=self._domain_url + "/success",
                 cancel_url=self._domain_url,
                 automatic_tax={"enabled": True},

@@ -13,7 +13,6 @@ primary_region = "atl"
 
 [deploy]
   strategy = "rolling"
-  max-per-region = 1
 
 [env]
   API_KEY = "prod"
