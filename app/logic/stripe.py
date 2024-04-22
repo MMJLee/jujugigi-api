@@ -50,12 +50,10 @@ class StripeLogic:
         try:
             _ = stripe.Webhook.construct_event(payload=stripe_response_body, sig_header=stripe_response_header, secret=self._stripe_webhook_secret)
             stripe_response_body_json = json.loads(stripe_response_body.decode("utf-8"))
-            payment_id = "error"
             event_type = stripe_response_body_json["type"]
-            if event_type == "charge.succeeded":
-                payment_id = stripe_response_body_json["data"]["object"]["payment_intent"]
-                await self._image_logic.gacha(user_email=stripe_response_body_json["data"]["object"]["billing_details"]["email"], quantity=2)
-            stripe_response_body_obj = StripeWebhook(payment_id=payment_id, **stripe_response_body_json)
+            if event_type == "checkout.session.completed":
+                await self._image_logic.gacha(user_email=stripe_response_body_json["data"]["object"]["customer_details"]["email"], quantity=2)
+            stripe_response_body_obj = StripeWebhook(**stripe_response_body_json)
             return await self._stripe_data.upsert(stripe_update=stripe_response_body_obj)
         except KeyError as e:
             raise BaseError({"code": "stripe_email", "description": e}) from e

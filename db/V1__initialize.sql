@@ -41,7 +41,6 @@ CREATE INDEX IF NOT EXISTS user_image_index_created_on ON public.user_image (cre
 
 CREATE TABLE IF NOT EXISTS public.stripe (
     event_id varchar,
-    payment_id varchar NOT NULL,
     object varchar,
     api_version date,
     created_on timestamptz,
@@ -52,7 +51,6 @@ CREATE TABLE IF NOT EXISTS public.stripe (
     type varchar,
     CONSTRAINT stripe_pk PRIMARY KEY (event_id)
 );
-CREATE INDEX IF NOT EXISTS stripe_index_payment_id ON public.stripe (payment_id);
 
 CREATE VIEW public.rankings AS (
     SELECT 
