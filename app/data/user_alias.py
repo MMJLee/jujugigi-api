@@ -28,7 +28,7 @@ class UserAliasData:
             column="created",
         )
 
-    async def read(self, user_alias: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[UserAlias]]:
+    async def read(self, user_alias: Optional[str] = None, user_email: Optional[str] = None, limit: int = 10, offset: int = 0) -> Sequence[Optional[UserAlias]]:
         filter_statement = ""
         values = {"limit": limit, "offset": offset}
 
@@ -54,7 +54,7 @@ class UserAliasData:
         return user_alias_response
 
     async def update(self, user_email: str, user_alias: UserAliasUpdate) -> int:
-        mapped_dict = user_alias.model_dump()
+        mapped_dict = user_alias.model_dump(exclude_unset=True)
         mapped_dict["user_email"] = user_email
         update_statement = build_update_statement(mapped_dict=mapped_dict)
         return await self._db.fetch_val(

@@ -95,8 +95,9 @@ def stripe_data_dependency(db: Database = Depends(get_db)) -> StripeData:
 def image_logic_dependency(
     image_data: ImageData = Depends(image_data_dependency),
     user_image_data: UserImageData = Depends(user_image_data_dependency),
+    user_alias_data: UserImageData = Depends(user_alias_data_dependency),
 ) -> ImageLogic:
-    return ImageLogic(image_data=image_data, user_image_data=user_image_data)
+    return ImageLogic(image_data=image_data, user_image_data=user_image_data, user_alias_data=user_alias_data)
 
 
 def user_image_logic_dependency(
@@ -117,7 +118,8 @@ def stripe_logic_dependency(
     stripe_price_id: str = Depends(get_stripe_price_id),
     stripe_webhook_secret: str = Depends(get_stripe_webhook_secret),
     domain_url: str = Depends(get_domain),
-    image_logic: ImageLogic = Depends(image_logic_dependency),
+    image_data: ImageLogic = Depends(image_data_dependency),
+    user_image_data: UserImageData = Depends(user_image_data_dependency),
 ) -> StripeLogic:
     return StripeLogic(
         stripe_data=stripe_data,
@@ -125,5 +127,6 @@ def stripe_logic_dependency(
         stripe_price_id=stripe_price_id,
         stripe_webhook_secret=stripe_webhook_secret,
         domain_url=domain_url,
-        image_logic=image_logic,
+        image_data=image_data,
+        user_image_data=user_image_data,
     )

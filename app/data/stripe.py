@@ -1,6 +1,5 @@
 # standard lib imports
 import json
-from typing import Optional, Sequence
 
 # third party imports
 from databases import Database

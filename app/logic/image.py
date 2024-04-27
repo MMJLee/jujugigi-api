@@ -1,7 +1,7 @@
 # standard lib imports
 import re
 from typing import Sequence, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 # third party imports
@@ -11,14 +11,17 @@ from fastapi import UploadFile
 from app.exceptions import BaseError
 from app.data.image import ImageData
 from app.data.user_image import UserImageData
+from app.data.user_alias import UserAliasData
 from app.models.image import ImageCreate, ImageUpdate, ImageResponse
+from app.models.user_alias import UserAliasUpdate
 from app.models.user_image import UserImageCreate
 
 
 class ImageLogic:
-    def __init__(self, image_data: ImageData, user_image_data: UserImageData):
+    def __init__(self, image_data: ImageData, user_image_data: UserImageData, user_alias_data: UserAliasData):
         self._image_data = image_data
         self._user_image_data = user_image_data
+        self._user_alias_data = user_alias_data
 
     async def create(self, image_file: UploadFile, user_email: str) -> int:
         image_file.file.seek(0)
@@ -71,15 +74,6 @@ class ImageLogic:
     async def delete(self, image_id: int) -> int:
         return await self._image_data.delete(image_id=image_id)
 
-    async def gacha(self, user_email: str, quantity: int) -> int:
-        count = 0
-        image_ids = await self._image_data.read_random_unowned_images(user_email=user_email, quantity=quantity)
-        for image_id in image_ids:
-            count += await self._user_image_data.create(
-                user_image=UserImageCreate(user_email=user_email, image_id=image_id, opened=False, created_by=user_email, updated_by=user_email)
-            )
-        return count
-
     async def open_image(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
         user_image_id = await self._user_image_data.open_image(user_email=user_email)
         if user_image_id:
@@ -89,3 +83,16 @@ class ImageLogic:
 
     async def read_random_unowned_images(self, user_email: str, quantity: int) -> Sequence[Optional[int]]:
         return await self._image_data.read_random_unowned_images(user_email=user_email, quantity=quantity)
+
+    async def daily_dollar(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
+        ua_record = await self._user_alias_data.read(user_email=user_email, limit=1, offset=0)
+        now = datetime.now(tz=ZoneInfo("America/Chicago"))
+        if ua_record[0].daily_dollar < (now - timedelta(hours=24)):
+            image_ids = await self._image_data.read_random_unowned_images(user_email=user_email, quantity=1)
+            if len(image_ids) > 0:
+                user_alias = UserAliasUpdate(daily_dollar=now, updated_by=user_email, updated_on=now)
+                await self._user_alias_data.update(user_email=user_email, user_alias=user_alias)
+                return await self._user_image_data.create(
+                    user_image=UserImageCreate(user_email=user_email, image_id=image_ids[0], opened=False, created_by=user_email, updated_by=user_email)
+                )
+        return 0
