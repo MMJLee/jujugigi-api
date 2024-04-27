@@ -13,7 +13,8 @@ class UserAliasLogic:
         self._user_alias_data = user_alias_data
 
     async def create(self, user_alias: UserAliasBase, user_email: str) -> int:
-        user_alias = UserAliasCreate(user_alias=user_alias.user_alias, user_email=user_email, created_by=user_email, updated_by=user_email)
+        now = datetime.now(tz=ZoneInfo("America/Chicago"))
+        user_alias = UserAliasCreate(user_alias=user_alias.user_alias, user_email=user_email, daily_dollar=now, created_by=user_email, updated_by=user_email)
         return await self._user_alias_data.create(user_alias=user_alias)
 
     async def read(self, user_alias: Optional[str], user_email: Optional[str], limit: int, offset: int) -> Sequence[Optional[UserAlias]]:

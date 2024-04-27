@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.user_alias (
     user_alias_id serial NOT NULL,
     user_email varchar NOT NULL,
     user_alias varchar NOT NULL,
+    daily_dollar timestamptz,
     created_by varchar NOT NULL default 'jujugigi-api',
     created_on timestamptz NOT NULL default current_timestamp,
     updated_by varchar NOT NULL default 'jujugigi-api',

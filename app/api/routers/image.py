@@ -104,3 +104,17 @@ async def open_image(
 
     user_email = auth_info
     return await image_logic.open_image(user_email=user_email)
+
+
+@router.post("/dd", response_model=bool)
+async def daily_dollar(
+    auth_info: str = Security(
+        authorize_user,
+        scopes=[],
+    ),
+    image_logic: ImageLogic = Depends(image_logic_dependency),
+):
+
+    user_email = auth_info
+    added = await image_logic.daily_dollar(user_email=user_email)
+    return bool(added)
