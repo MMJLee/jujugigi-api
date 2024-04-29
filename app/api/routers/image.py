@@ -2,14 +2,14 @@
 from typing import Sequence, Optional
 
 # third party imports
-from fastapi import APIRouter, File, Path, Query, Body, Depends, Security, UploadFile
+from fastapi import APIRouter, File, Path, Query, Depends, Security, UploadFile
 
 # module imports
 from app.api.dependencies import image_logic_dependency, authorize_user
 from app.logic.authorization import CRUDOperation, ResourceType
 from app.logic.image import ImageLogic
-from app.models.response import AddResponse, UpdateResponse, DeleteResponse
-from app.models.image import ImageBase, ImageResponse
+from app.models.response import AddResponse, DeleteResponse
+from app.models.image import ImageResponse
 
 
 router = APIRouter()
@@ -61,21 +61,6 @@ async def read(
 
     _ = auth_info
     return await image_logic.read(user_email=user_email, user_alias=user_alias, opened=opened, limit=limit, offset=offset)
-
-
-@router.put("/", response_model=UpdateResponse)
-async def update(
-    auth_info: str = Security(
-        authorize_user,
-        scopes=[f"{CRUDOperation.UPDATE.value}:{ResourceType.IMAGE.value}"],
-    ),
-    image_logic: ImageLogic = Depends(image_logic_dependency),
-    image: ImageBase = Body(..., title="update image"),
-):
-
-    user_email = auth_info
-    updated = await image_logic.update(image=image, user_email=user_email)
-    return UpdateResponse(updated=updated)
 
 
 @router.delete("/{image_id}", response_model=DeleteResponse)

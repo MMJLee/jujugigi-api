@@ -13,7 +13,6 @@ from app.data.image import ImageData
 from app.data.user_image import UserImageData
 from app.data.user_alias import UserAliasData
 from app.models.image import ImageCreate, ImageUpdate, ImageResponse
-from app.models.user_alias import UserAliasUpdate
 from app.models.user_image import UserImageCreate
 
 
@@ -84,14 +83,13 @@ class ImageLogic:
     async def read_random_unowned_images(self, user_email: str, quantity: int) -> Sequence[Optional[int]]:
         return await self._image_data.read_random_unowned_images(user_email=user_email, quantity=quantity)
 
-    async def daily_dollar(self, user_email: str) -> Sequence[Optional[ImageResponse]]:
+    async def daily_dollar(self, user_email: str) -> int:
         ua_record = await self._user_alias_data.read(user_email=user_email, limit=1, offset=0)
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
         if ua_record[0].daily_dollar < (now - timedelta(hours=24)):
             image_ids = await self._image_data.read_random_unowned_images(user_email=user_email, quantity=1)
             if len(image_ids) > 0:
-                user_alias = UserAliasUpdate(daily_dollar=now, updated_by=user_email, updated_on=now)
-                await self._user_alias_data.update(user_email=user_email, user_alias=user_alias)
+                await self._user_alias_data.daily_dollar(user_email=user_email)
                 return await self._user_image_data.create(
                     user_image=UserImageCreate(user_email=user_email, image_id=image_ids[0], opened=False, created_by=user_email, updated_by=user_email)
                 )

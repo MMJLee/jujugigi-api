@@ -81,3 +81,16 @@ class UserAliasData:
             values={"user_alias_id": user_alias_id},
             column="deleted",
         )
+
+    async def daily_dollar(self, user_email: str) -> int:
+        return await self._db.fetch_val(
+            query="""
+                WITH update_user_alias as (
+                    UPDATE user_alias SET daily_dollar = current_timestamp
+                    WHERE user_email = :user_email RETURNING *
+                ) SELECT COUNT(*) as updated 
+                FROM update_user_alias
+            """,
+            values={"user_email": user_email},
+            column="updated",
+        )
