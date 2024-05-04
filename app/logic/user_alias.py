@@ -15,7 +15,7 @@ class UserAliasLogic:
     async def create(self, user_alias: UserAliasBase, user_email: str) -> int:
         now = datetime.now(tz=ZoneInfo("America/Chicago"))
         user_alias = UserAliasCreate(
-            user_alias=user_alias.user_alias, user_email=user_email, daily_dollar=now - timedelta(days=2), created_by=user_email, updated_by=user_email
+            user_alias=user_alias.user_alias, user_email=user_email, daily_dollar=(now - timedelta(days=2)), created_by=user_email, updated_by=user_email
         )
         return await self._user_alias_data.create(user_alias=user_alias)
 
