@@ -22,3 +22,6 @@ cloudflare for DNS records
 auth0 for authentication
 
 cat .env | fly secrets import 
+
+https://github.com/user-attachments/assets/ecd2c6f9-8819-408f-9e56-4f735bad0b05
+
